@@ -1,6 +1,8 @@
 import { Container } from "inversify";
+import { authModule } from "../modules/AuthModule.js";
 
-const container  = new Container()
-container.load{
-    
-}
+export const container  = new Container()
+container.load(
+    authModule,
+)
+

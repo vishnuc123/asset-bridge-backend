@@ -10,7 +10,8 @@
     "start": "tsup src/server.ts --format esm --clean --minify",
     "build": "rimraf dist && tsup src/server.ts --format esm",
     "dev": "tsup src/server.ts --format esm --watch --onSuccess \"node dist/server.js\"",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "express": "^5.2.1",
@@ -26,6 +27,7 @@
     "eslint": "^10.0.3",
     "globals": "^17.4.0",
     "jiti": "^2.6.1",
+    "prettier": "^3.8.1",
     "rimraf": "^6.1.3",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
