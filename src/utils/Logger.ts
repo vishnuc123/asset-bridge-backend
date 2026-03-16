@@ -1,0 +1,21 @@
+import pino from "pino"
+
+const isDev = process.env.NODE_ENV !== "production"
+
+
+export const logger = pino({
+  level: "info",
+  ...(isDev && {
+    transport: {
+      target: "pino-pretty",
+      options: {
+        colorize: true,
+        translateTime: "SYS:standard"
+      }
+    }
+  })
+})
+
+logger.info("Logger is working 🚀")
+logger.warn("This is a warning")
+logger.error("This is an error log")

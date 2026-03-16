@@ -5,7 +5,7 @@ export interface IUserModel {
     firstname: string
     lastname: string
     email: string
-    passwordHash: string
+    password: string
     role: TRole
 
     phone: string
