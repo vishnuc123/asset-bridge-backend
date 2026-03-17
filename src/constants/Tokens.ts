@@ -9,7 +9,8 @@ export const Tokens = {
     authService:Symbol.for("AuthService"),
 
     // userCases
-    authUserCase:Symbol.for("AuthUseCase"),
+    LoginUseCase:Symbol.for("LoginUseCase"),
+    RegisterUseCase:Symbol.for("RegisterUseCase"),
 
     // routes
     authUserRoute:Symbol.for("authUserRoutes")

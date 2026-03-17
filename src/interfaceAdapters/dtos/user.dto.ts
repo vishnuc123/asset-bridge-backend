@@ -20,3 +20,12 @@ export type TUserResponseDto =  {
     createdAt: Date
     updatedAt: Date
 }
+
+export type TCreateUserDto = {
+    firstname: string
+    lastname: string
+    email: string
+    password:string
+    role:TRole
+    phone: string
+}
