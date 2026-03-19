@@ -1,12 +1,13 @@
 import { inject, injectable } from "inversify";
 import { Tokens } from "../../constants/Tokens.js";
-import type { ILoginUseCase, IRegisterUseCase } from "../../Applications/interfaces/auth.interface.js";
+import type { IRegisterUseCase } from "../../Applications/interfaces/auth.interface.js";
 import type { IAuthController } from "../interfaces/IAuthController.js";
 import type { Request, Response, NextFunction } from "express";
 import type { TCreateUserDto } from "../dtos/user.dto.js";
 import { ResponseHandler } from "../../middlewares/ResponseHandle.js";
 import { AUTH_RES_MESSAGES } from "../../constants/ResMessages.js";
 import { HttpStatusCode } from "../../constants/HttpStatusCodes.js";
+import { logger } from "../../utils/Logger.js";
 
 @injectable()
 export class UserController implements IAuthController {
@@ -17,14 +18,15 @@ export class UserController implements IAuthController {
 
     async register(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const { firstname, lastname, email, password, role, phone, } = req.body
+            logger.info(req.body)
+            const { firstname, lastname, email, password, } = req.body
+
             const userdata: TCreateUserDto = {
                 firstname,
                 lastname,
                 email,
                 password,
-                role,
-                phone
+                role:req.role || "User"
             }
             const newUser = await this._registerUseCase.Regiser(userdata)
             ResponseHandler.success(res, AUTH_RES_MESSAGES.register, newUser, HttpStatusCode.OK)

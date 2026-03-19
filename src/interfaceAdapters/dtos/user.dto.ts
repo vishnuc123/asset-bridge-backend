@@ -27,5 +27,5 @@ export type TCreateUserDto = {
     email: string
     password:string
     role:TRole
-    phone: string
+    // phone: string
 }

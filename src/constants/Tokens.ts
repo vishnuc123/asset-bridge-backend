@@ -7,6 +7,8 @@ export const Tokens = {
 
     // services
     authService:Symbol.for("AuthService"),
+    redisService:Symbol.for("RedisService"),
+    _mailService:Symbol.for("MailService"),
 
     // userCases
     LoginUseCase:Symbol.for("LoginUseCase"),

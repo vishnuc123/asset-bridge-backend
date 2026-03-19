@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
-import type { IUserModel } from "../../../domain/models/userModel.interface.js";
+import { IUserModel } from "../../../domain/models/userModel";
 
 export interface IUserDocument extends IUserModel, Document {}
 
@@ -75,4 +75,4 @@ const UserSchema = new Schema<IUserDocument>(
   }
 );
 
-export const UserModel = mongoose.model<IUserDocument>("User", UserSchema);
+export const UserModel = mongoose.model<IUserDocument>("Users", UserSchema);

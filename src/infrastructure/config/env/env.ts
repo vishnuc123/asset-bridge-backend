@@ -7,5 +7,6 @@ export const env = {
     EMAIL:process.env.EMAIL,
     EMAIL_PASS:process.env.EMAIL_PASS,
     REDIS_URL : process.env.REDIS_URL,
-    MONGO_DB_URL:process.env.DB_CONNECTION_STRING
+    MONGO_DB_URL:process.env.DB_CONNECTION_STRING,
+    CLIENT_URL : process.env.CLIENT_URL
 }

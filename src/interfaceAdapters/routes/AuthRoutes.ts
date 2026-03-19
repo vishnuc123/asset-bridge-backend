@@ -3,17 +3,17 @@ import { BaseRoute } from "./BaseRoute.js";
 import { Tokens } from "../../constants/Tokens.js";
 import type { UserController } from "../controllers/AuthController.js";
 import type { CustomRequest } from "../../utils/CustomRequest.js";
-import type { Response } from "express";
+import { attachRole } from "../../middlewares/attachRole.js";
+import { Roles } from "../../constants/Roles.js";
 
 
 @injectable()
 export class UserRoutes extends BaseRoute{
     constructor(
-        @inject(Tokens.authController) 
-        private authController : UserController
+        @inject(Tokens.authController) private authController : UserController
     ){super()}
     protected initRoute(): void {
         this.router
-        .post("/register",(req:CustomRequest,res,next) => this.authController.register(req,res,next))
+        .post("/signup",attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.register(req,res,next))
     }
 }

@@ -5,9 +5,9 @@ export class ResponseHandler {
     static success(
         res: Response,
         message: string,
-        data: any = null,
+        data: unknown = null,
         statusCode: number = HttpStatusCode.OK,
-        meta: Record<string, any> | null = null
+        meta: Record<string, unknown> | null = null
     ): Response {
         return res.status(statusCode).json({
             success: true,

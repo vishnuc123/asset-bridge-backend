@@ -1,16 +1,16 @@
-import express from "express"
 import { connectRedis } from "./infrastructure/config/redis/redis.js"
 import { env } from "./infrastructure/config/env/env.js"
 import { connectDB } from "./infrastructure/config/database/db.js"
+import { Settings } from "./settings/App.js"
 
-const app  = express()
+const app  = new Settings()
 const startServer = async () => {
     try {
         await connectDB()
         await connectRedis()
 
 
-        app.listen(env.PORT)
+        app.listen(Number(env.PORT) || 2000)
     } catch (error) {
         console.error('Server failed to start:', error)
         process.exit(1)

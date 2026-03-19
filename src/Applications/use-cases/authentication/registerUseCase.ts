@@ -7,11 +7,15 @@ import { AppError } from "../../../utils/AppError.js";
 import { AUTH_ERROR_MESSAGES } from "../../../constants/errorMessages.js";
 import { HttpStatusCode } from "../../../constants/HttpStatusCodes.js";
 import { AUTH_RES_MESSAGES } from "../../../constants/ResMessages.js";
+import type { AuthService } from "../../../infrastructure/service/AuthService.js";
+import { v4 as uuidV4 } from "uuid";
+import type { TUserRegistrationInput } from "../../../shared/types/CommonTypes.js";
 
 @injectable()
 export class RegisterUseCase implements IRegisterUseCase{
     constructor(
-        @inject(Tokens.authRepository)private authRepository:userRepository
+        @inject(Tokens.authRepository)private authRepository:userRepository,
+        @inject(Tokens.authService) private _authService: AuthService
 
     ){}
     async Regiser(userData: TCreateUserDto): Promise<{ userId: string; message: string; }> {
@@ -22,14 +26,20 @@ export class RegisterUseCase implements IRegisterUseCase{
             throw new AppError(AUTH_ERROR_MESSAGES.userExist,HttpStatusCode.BAD_REQUEST)
         }
 
-        const otp = 
-        const hashPass = 
-        const tempUserId = 
+        const otp = this._authService.generateOtp(6);
+        const hashPass = await this._authService.hashPassword(userData.password as string)
+        const tempUserId = `temp:signup:${uuidV4()}`
 
 
-        // await promise.all([
-
-        // ])
+        const newUserData : TUserRegistrationInput = {
+            ...userData,
+            password:hashPass,
+            role:userData.role,
+        }
+        await Promise.all([
+            this._authService.storeOtp(tempUserId,otp,  newUserData)
+            // this._authService.sendot
+        ])
         
         return {
             userId:tempUserId,

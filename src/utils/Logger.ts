@@ -16,6 +16,6 @@ export const logger = pino({
   })
 })
 
-logger.info("Logger is working 🚀")
-logger.warn("This is a warning")
-logger.error("This is an error log")
+// logger.info("Logger is working 🚀")
+// logger.warn("This is a warning")
+// logger.error("This is an error log")

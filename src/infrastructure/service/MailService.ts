@@ -3,7 +3,9 @@ import type { IMailService } from "../interfaces/MailService.interface.js";
 import { env } from "../config/env/env.js";
 import { AppError } from "../../utils/AppError.js";
 import { HttpStatusCode } from "../../constants/HttpStatusCodes.js";
+import { injectable } from "inversify";
 
+@injectable()
 export class MailService implements IMailService {
     private transporter: nodemailer.Transporter;
     constructor() {
@@ -98,7 +100,7 @@ export class MailService implements IMailService {
                 otpExpireAt
             }
 
-        } catch (error: any) {
+        } catch (error) {
             throw new AppError(`OTP SEND FAILED PLEASE TRY AGAIN LATER. ${error}`, HttpStatusCode.BAD_REQUEST)
         }
     }
