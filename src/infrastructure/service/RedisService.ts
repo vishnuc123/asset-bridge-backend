@@ -5,18 +5,18 @@ import { otpTimer } from "../config/jwt/jwtConfig.js";
 import { injectable } from "inversify";
 
 @injectable()
-export class RedisService implements IredisService{
+export class RedisService implements IredisService {
     private RedisClient = redisClient
     async get<T>(key: string): Promise<T | null> {
         const value = await this.RedisClient.get(key);
-        if(!value)return null
+        if (!value) return null
         return JSON.parse(value) as T
     }
     async set<T>(key: string, value: T, ttl: number): Promise<void> {
-        if(ttl){
-            await this.RedisClient.set(key,JSON.stringify(value),{EX:ttl})
-        }else{
-            await this.RedisClient.set(key,JSON.stringify(value))
+        if (ttl) {
+            await this.RedisClient.set(key, JSON.stringify(value), { EX: ttl })
+        } else {
+            await this.RedisClient.set(key, JSON.stringify(value))
         }
     }
     async del(key: string): Promise<number> {
@@ -27,8 +27,24 @@ export class RedisService implements IredisService{
         const payload = {
             otp,
             data,
-            expiresAt:new Date(Date.now()+1*60*1000).getTime(),
+            expiresAt: new Date(Date.now() + 5 * 60 * 1000).getTime(),
         }
-        await this.set(userId,payload,otpTimer.expiresAt*3)
+        await this.set(userId, payload, otpTimer.expiresInSeconds)
     }
+
+    async getOtp(userId: string): Promise<{ otp: string, data: TOtpData, expiresAt: number } | null> {
+        const raw = await this.RedisClient.get(userId)
+
+        if (!raw) return null
+        // const jsonRaws = JSON.stringify(raw)
+        const parsed = JSON.parse(raw);
+        console.log(parsed)
+        return parsed
+    }
+    async deleteOtp(userId: string): Promise<number> {
+        const result = await this.del(userId);
+        return result;
+    }
+    
+    async StoreRefreashToken(userId:string,refreashToken:string)
 }

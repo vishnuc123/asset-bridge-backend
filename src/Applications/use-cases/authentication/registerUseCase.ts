@@ -37,8 +37,8 @@ export class RegisterUseCase implements IRegisterUseCase{
             role:userData.role,
         }
         await Promise.all([
-            this._authService.storeOtp(tempUserId,otp,  newUserData)
-            // this._authService.sendot
+            this._authService.storeOtp(tempUserId,otp,  newUserData),
+            this._authService.sendOtpOnEmail(userData.email as string,otp)
         ])
         
         return {

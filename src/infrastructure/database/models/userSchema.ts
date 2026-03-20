@@ -33,12 +33,12 @@ const UserSchema = new Schema<IUserDocument>(
     role: {
       type: String,
       required: true,
-      enum: ["user", "admin", "property_owner","investor"], 
+      enum: ["User", "Admin", "Property_owner","Investor"], 
     },
 
     phone: {
       type: String,
-      required: true,
+      // required: true,
     },
 
     walletId: {

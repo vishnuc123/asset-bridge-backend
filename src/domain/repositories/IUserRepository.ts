@@ -1,4 +1,4 @@
-import type { IUserModel } from "../models/userModel.interface.js"
+import { IUserModel } from "../models/userModel";
 
 
 export interface IUserRepository{

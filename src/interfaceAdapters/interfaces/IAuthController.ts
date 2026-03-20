@@ -1,5 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
+import { CustomRequest } from "../../utils/CustomRequest";
 
 export interface IAuthController{
-    register(req:Request,res:Response,next:NextFunction):Promise<void>
+    register(req:CustomRequest,res:Response,next:NextFunction):Promise<void>
+    verifyOtp(req:CustomRequest,res:Response,next:NextFunction):Promise<void>
+    login(req:CustomRequest,res:Response,next:NextFunction):Promise<void>
 }

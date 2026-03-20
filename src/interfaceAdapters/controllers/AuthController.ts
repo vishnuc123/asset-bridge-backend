@@ -1,22 +1,31 @@
 import { inject, injectable } from "inversify";
 import { Tokens } from "../../constants/Tokens.js";
-import type { IRegisterUseCase } from "../../Applications/interfaces/auth.interface.js";
+import type { IRegisterUseCase, IVerifyOtpUseCase } from "../../Applications/interfaces/auth.interface.js";
 import type { IAuthController } from "../interfaces/IAuthController.js";
-import type { Request, Response, NextFunction } from "express";
+import { type Request, type Response, type NextFunction, response } from "express";
 import type { TCreateUserDto } from "../dtos/user.dto.js";
 import { ResponseHandler } from "../../middlewares/ResponseHandle.js";
 import { AUTH_RES_MESSAGES } from "../../constants/ResMessages.js";
 import { HttpStatusCode } from "../../constants/HttpStatusCodes.js";
 import { logger } from "../../utils/Logger.js";
+import { AppError } from "../../utils/AppError.js";
+import { RegisterUseCase } from "../../Applications/use-cases/authentication/registerUseCase.js";
+import { VerifyOtpUseCase } from "../../Applications/use-cases/authentication/VerifyOtpUseCase.js";
+import { CustomRequest } from "../../utils/CustomRequest.js";
+import { LoginUseCase } from "../../Applications/use-cases/authentication/loginUseCase.js";
+import { Roles } from "../../constants/Roles.js";
+import { setAccessCookie, setRefreshCookie } from "../../utils/SetCookies.js";
 
 @injectable()
 export class UserController implements IAuthController {
     constructor(
         // @inject(Tokens.LoginUseCase) private _loginUseCase: ILoginUseCase,
-        @inject(Tokens.RegisterUseCase) private _registerUseCase: IRegisterUseCase
+        @inject(Tokens.RegisterUseCase) private _registerUseCase: RegisterUseCase,
+        @inject(Tokens.VerifyOtp) private _VerifyOtpUseCase: VerifyOtpUseCase,
+        @inject(Tokens.LoginUseCase) private _loginUseCase:LoginUseCase
     ) { }
 
-    async register(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async register(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
         try {
             logger.info(req.body)
             const { firstname, lastname, email, password, } = req.body
@@ -26,7 +35,7 @@ export class UserController implements IAuthController {
                 lastname,
                 email,
                 password,
-                role:req.role || "User"
+                role: req.role || Roles.user_role
             }
             const newUser = await this._registerUseCase.Regiser(userdata)
             ResponseHandler.success(res, AUTH_RES_MESSAGES.register, newUser, HttpStatusCode.OK)
@@ -35,5 +44,39 @@ export class UserController implements IAuthController {
             next(error)
         }
 
+    }
+
+    async verifyOtp(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { userId, otp, purpose } = req.body
+            if (!userId) {
+                throw new AppError("userid is missing,please try again", HttpStatusCode.BAD_REQUEST)
+            }
+
+            if (!otp) {
+                throw new AppError("otp is missing", HttpStatusCode.BAD_REQUEST)
+            }
+            const { data, message } = await this._VerifyOtpUseCase.VerifyOtp(userId, otp, purpose)
+            ResponseHandler.success(res, message, data, HttpStatusCode.OK)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+
+    async login(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const {email,password} = req.body
+            console.log(email,password)
+            const role = req.role || Roles.user_role
+
+            const {refreashToken,accessToken,user} = await this._loginUseCase.login(email,password,role)
+            setAccessCookie(accessToken,res)
+            setRefreshCookie(refreashToken,res)
+
+            ResponseHandler.success(res,"user login Successfully",user,HttpStatusCode.OK)
+        } catch (error) {
+            next(error)
+        }
     }
 }

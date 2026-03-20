@@ -24,9 +24,31 @@ export class AuthService implements IAuthService {
         const randomNum = crypto.randomInt(100000, 999999)
         return randomNum.toString()
     }
-    // async verifyOtp(userId: string, otp: string, purpose: "signup" | "reset"): Promise<TOtpData> {
-    //     const storedData = await 
-    // }
+    async verifyOtp(userId: string, otp: string,): Promise<TOtpData> {
+        const storedData = await this._redisService.getOtp(userId)
+        if (!storedData) {
+            throw new AppError("otp not found or expired", HttpStatusCode.BAD_REQUEST)
+        }
+        const currentTime = new Date().getTime()
+        if (currentTime >= storedData.expiresAt) {
+            throw new AppError("otp has expired", HttpStatusCode.BAD_REQUEST)
+        }
+        // let storedotpdata = storedData.otp.trim()
+        let userotp = otp.trim()
+        // console.log(storedData,userotp)
+        if (storedData.otp !== userotp) {
+
+            throw new AppError("invalid otp", HttpStatusCode.BAD_REQUEST)
+        }
+
+
+        const deleted = await this._redisService.deleteOtp(userId)
+        if (deleted <= 0) {
+            throw new AppError("error while verifying otp", HttpStatusCode.INTERNAL_SERVER_ERROR)
+        }
+
+        return storedData.data
+    }
 
     async hashPassword(password: string): Promise<string> {
         const salt = await bcrypt.genSalt(10)
@@ -40,7 +62,12 @@ export class AuthService implements IAuthService {
         ])
     }
     async sendOtpOnEmail(email: string, otp: string): Promise<{ message: string, otpExpireAt: string }> {
-        const result = await this._MailService.sendOtpEmail(email, otp, (otpTimer.expiresAt * 1 / 60).toString());
+        const result = await this._MailService.sendOtpEmail(email, otp, (otpTimer.expiresInSeconds / 60).toString());
         return result;
+    }
+
+
+    ComparePassword(passwrod: string,userPassword:string): Promise<boolean> {
+        return bcrypt.compare(passwrod,userPassword)
     }
 }

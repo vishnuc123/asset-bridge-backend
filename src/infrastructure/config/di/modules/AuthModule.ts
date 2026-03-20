@@ -7,6 +7,8 @@ import { RegisterUseCase } from "../../../../Applications/use-cases/authenticati
 import { AuthService } from "../../../service/AuthService.js";
 import { RedisService } from "../../../service/RedisService.js";
 import { MailService } from "../../../service/MailService.js";
+import { VerifyOtpUseCase } from "../../../../Applications/use-cases/authentication/VerifyOtpUseCase.js";
+import { ConfirmRegisterUseCase } from "../../../../Applications/use-cases/authentication/confirmRegisterUseCase.js";
 
 export const authModule = new ContainerModule(({bind}) =>  {
     bind(Tokens.authController).to(UserController)
@@ -16,4 +18,6 @@ export const authModule = new ContainerModule(({bind}) =>  {
     bind(Tokens.RegisterUseCase).to(RegisterUseCase)
     bind(Tokens.redisService).to(RedisService)
     bind(Tokens._mailService).to(MailService)
+    bind(Tokens.VerifyOtp).to(VerifyOtpUseCase)
+    bind(Tokens.ConfirmRegisterUseCase).to(ConfirmRegisterUseCase)
 })
