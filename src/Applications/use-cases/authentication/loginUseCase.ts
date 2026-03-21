@@ -8,6 +8,9 @@ import { userRepository } from "../../../infrastructure/database/repositories/us
 import { Tokens } from "../../../constants/Tokens.js";
 import { TRole } from "../../../shared/types/CommonTypes.js";
 import { RedisService } from "../../../infrastructure/service/RedisService.js";
+import { jwtConfig } from "../../../infrastructure/config/jwt/jwtConfig.js";
+import { MapResponse } from "../../../utils/MapResponse.js";
+import { TUserResponseDto } from "../../../interfaceAdapters/dtos/user.dto.js";
 
 @injectable()
 export class LoginUseCase implements ILoginUseCase {
@@ -34,6 +37,14 @@ export class LoginUseCase implements ILoginUseCase {
             throw new AppError("user password not matching",HttpStatusCode.BAD_REQUEST)
         }
 
-       
+        const accessToken = this._authService.generateAccessToken(user.id,role,user.email)
+        const refreashToken = this._authService.generateRefreashToken(user.id,role,user.email)
+        await this._redisService.StoreRefreashToken(user.id,refreashToken,jwtConfig.refreshToken.maxAge/1000)
+        const mapped = MapResponse.MapUserResponseToDto(user)
+        return {
+            refreashToken,
+            accessToken,
+            user:mapped
+        }
     }
 }

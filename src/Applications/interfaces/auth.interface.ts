@@ -13,3 +13,7 @@ export interface IVerifyOtpUseCase{
 export interface IConfirmRegisterUseCase{
     ConfirmRegister(userData:TCreateUserDto):Promise<{userId:string,message:string}>
 }
+
+export interface IVerifyAccessUseCase{
+    executeToken(refreashToken:string):Promise<{accessToken:string}>
+}

@@ -1,6 +1,5 @@
 import { inject, injectable } from "inversify";
 import { Tokens } from "../../constants/Tokens.js";
-import type { IRegisterUseCase, IVerifyOtpUseCase } from "../../Applications/interfaces/auth.interface.js";
 import type { IAuthController } from "../interfaces/IAuthController.js";
 import { type Request, type Response, type NextFunction, response } from "express";
 import type { TCreateUserDto } from "../dtos/user.dto.js";
@@ -15,6 +14,7 @@ import { CustomRequest } from "../../utils/CustomRequest.js";
 import { LoginUseCase } from "../../Applications/use-cases/authentication/loginUseCase.js";
 import { Roles } from "../../constants/Roles.js";
 import { setAccessCookie, setRefreshCookie } from "../../utils/SetCookies.js";
+import { VerifyAccessUseCase } from "../../Applications/use-cases/authentication/VerifyAccessUseCase.js";
 
 @injectable()
 export class UserController implements IAuthController {
@@ -22,7 +22,8 @@ export class UserController implements IAuthController {
         // @inject(Tokens.LoginUseCase) private _loginUseCase: ILoginUseCase,
         @inject(Tokens.RegisterUseCase) private _registerUseCase: RegisterUseCase,
         @inject(Tokens.VerifyOtp) private _VerifyOtpUseCase: VerifyOtpUseCase,
-        @inject(Tokens.LoginUseCase) private _loginUseCase:LoginUseCase
+        @inject(Tokens.LoginUseCase) private _loginUseCase: LoginUseCase,
+        @inject(Tokens._verifyAccessUseCase)private _VerifyUseCase:VerifyAccessUseCase
     ) { }
 
     async register(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
@@ -66,15 +67,34 @@ export class UserController implements IAuthController {
 
     async login(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
         try {
-            const {email,password} = req.body
-            console.log(email,password)
+            const { email, password } = req.body
             const role = req.role || Roles.user_role
 
-            const {refreashToken,accessToken,user} = await this._loginUseCase.login(email,password,role)
-            setAccessCookie(accessToken,res)
-            setRefreshCookie(refreashToken,res)
+            const { refreashToken, accessToken, user } = await this._loginUseCase.login(email, password, role)
+            setAccessCookie(accessToken, res)
+            setRefreshCookie(refreashToken, res)
+            logger.info(`user: ${user.email} has been loggedin succesfully`)
+            ResponseHandler.success(res, "user login Successfully", user, HttpStatusCode.OK)
+        } catch (error) {
+            next(error)
+        }
+    }
 
-            ResponseHandler.success(res,"user login Successfully",user,HttpStatusCode.OK)
+   async  verifyRefreash(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            console.log("hello fromm mrefreag")
+            const refreshToken = req.cookies.refreshToken as string
+
+            if (!refreshToken) {
+                throw new AppError("refreash Token expired or not found",HttpStatusCode.NOT_FOUND)
+            }
+
+            const newtoken = await this._VerifyUseCase.executeToken(refreshToken)
+            
+
+            setAccessCookie(newtoken.accessToken,res)
+
+            ResponseHandler.success(res,"verfied",HttpStatusCode.OK)
         } catch (error) {
             next(error)
         }

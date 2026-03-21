@@ -18,5 +18,6 @@ export class UserRoutes extends BaseRoute{
         .post("/signup",attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.register(req,res,next))
         .post('/otp/verifyOtp',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.verifyOtp(req,res,next))
         .post('/login/',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.login(req,res,next))
+        .post('/refreash',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.verifyRefreash(req,res,next))
     }
 }

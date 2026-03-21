@@ -4,11 +4,13 @@ import { AppError } from "../../utils/AppError.js";
 import { HttpStatusCode } from "../../constants/HttpStatusCodes.js";
 import * as crypto from "crypto"
 import bcrypt from "bcryptjs"
-import type { TOtpData } from "../../shared/types/CommonTypes.js";
+import type { TOtpData, TRole } from "../../shared/types/CommonTypes.js";
 import { Tokens } from "../../constants/Tokens.js";
 import type { RedisService } from "./RedisService.js";
 import type { MailService } from "./MailService.js";
-import { otpTimer } from "../config/jwt/jwtConfig.js";
+import { jwtConfig, otpTimer } from "../config/jwt/jwtConfig.js";
+import jwt, { JwtPayload, Secret, SignOptions } from "jsonwebtoken"
+import { env } from "../config/env/env.js";
 
 @injectable()
 export class AuthService implements IAuthService {
@@ -69,5 +71,24 @@ export class AuthService implements IAuthService {
 
     ComparePassword(passwrod: string,userPassword:string): Promise<boolean> {
         return bcrypt.compare(passwrod,userPassword)
+    }
+    generateRefreashToken(userId: string, role: TRole, email: string): string {
+        const secreat:Secret = env.JWT_REFREASH_SECRET as string
+        const options:SignOptions = {
+            expiresIn:`${jwtConfig.refreshToken.expiresIn}`
+        }
+        return jwt.sign({userId,role,email},secreat,options)
+    }
+    generateAccessToken(userId: string, role: TRole, email: string): string {
+        
+        const secreat:Secret = env.JWT_ACCESS_SECRET as string
+        const options:SignOptions = {
+            expiresIn:`${jwtConfig.accessToken.expiresIn}`
+        }
+        return jwt.sign({userId,role,email},secreat,options)
+    }
+    verifyTokens(refreashToken: string): JwtPayload {
+        const decoded = jwt.verify(refreashToken,env.JWT_REFREASH_SECRET as string)
+        return decoded as JwtPayload
     }
 }

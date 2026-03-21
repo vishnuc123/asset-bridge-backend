@@ -1,4 +1,5 @@
-import type { TOtpData } from "../../shared/types/CommonTypes.js"
+import { JwtPayload } from "jsonwebtoken"
+import type { TOtpData, TRole } from "../../shared/types/CommonTypes.js"
 
 export interface IAuthService{
     generateOtp(length:number):string
@@ -8,5 +9,8 @@ export interface IAuthService{
     ComparePassword(passwrod:string,userPassword:string):Promise<boolean>
     // verifyOtp(userId: string, otp: string, purpose: 'signup' | 'reset'): Promise<TOtpData>
     // resendOtp(userId: string, purpose: 'signup' | 'reset'): Promise<void>
+    generateAccessToken(userId:string,role:TRole,email:string):string
+    generateRefreashToken(userId:string,role:TRole,email:string):string
+    verifyTokens(refreashToken:string):JwtPayload
 
 }

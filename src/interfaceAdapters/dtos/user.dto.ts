@@ -12,7 +12,7 @@ export type TUserResponseDto =  {
     stripeCustomerId?: string
     stripeConnectedAccountId?: string
 
-    kycStatus: "PENDING" | "VERIFIED" | "REJECTED"
+    kycStatus: "pending" | "verified" | "rejected"
 
     emailVerified: boolean
     phoneVerified: boolean
