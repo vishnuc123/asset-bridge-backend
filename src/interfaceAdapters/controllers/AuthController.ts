@@ -23,7 +23,7 @@ export class UserController implements IAuthController {
         @inject(Tokens.RegisterUseCase) private _registerUseCase: RegisterUseCase,
         @inject(Tokens.VerifyOtp) private _VerifyOtpUseCase: VerifyOtpUseCase,
         @inject(Tokens.LoginUseCase) private _loginUseCase: LoginUseCase,
-        @inject(Tokens._verifyAccessUseCase)private _VerifyUseCase:VerifyAccessUseCase
+        @inject(Tokens._verifyAccessUseCase) private _VerifyUseCase: VerifyAccessUseCase
     ) { }
 
     async register(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
@@ -80,21 +80,36 @@ export class UserController implements IAuthController {
         }
     }
 
-   async  verifyRefreash(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+    async verifyRefreash(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
         try {
             console.log("hello fromm mrefreag")
-            const refreshToken = req.cookies.refreshToken as string
+            const refreshToken = req.cookies.refresh_token as string
+            console.log("refreash token",refreshToken)
 
             if (!refreshToken) {
-                throw new AppError("refreash Token expired or not found",HttpStatusCode.NOT_FOUND)
+                throw new AppError("refreash Token expired or not found", HttpStatusCode.NOT_FOUND)
             }
 
             const newtoken = await this._VerifyUseCase.executeToken(refreshToken)
-            
 
-            setAccessCookie(newtoken.accessToken,res)
 
-            ResponseHandler.success(res,"verfied",HttpStatusCode.OK)
+            setAccessCookie(newtoken.accessToken, res)
+
+            ResponseHandler.success(res, "verfied", HttpStatusCode.OK)
+        } catch (error) {
+            next(error)
+        }
+    }
+    async GetCurrentUser(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            console.log("hello fromm me")
+            const user = req.user
+            if (!user) {
+                throw new AppError("unauthorized user not found", HttpStatusCode.UNAUTHORIZED)
+            }
+
+
+            ResponseHandler.success(res, "userfetched success", user, HttpStatusCode.OK)
         } catch (error) {
             next(error)
         }

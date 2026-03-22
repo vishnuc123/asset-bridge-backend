@@ -69,26 +69,62 @@ export class AuthService implements IAuthService {
     }
 
 
-    ComparePassword(passwrod: string,userPassword:string): Promise<boolean> {
-        return bcrypt.compare(passwrod,userPassword)
+    ComparePassword(passwrod: string, userPassword: string): Promise<boolean> {
+        return bcrypt.compare(passwrod, userPassword)
     }
     generateRefreashToken(userId: string, role: TRole, email: string): string {
-        const secreat:Secret = env.JWT_REFREASH_SECRET as string
-        const options:SignOptions = {
-            expiresIn:`${jwtConfig.refreshToken.expiresIn}`
+        const secreat: Secret = env.JWT_REFREASH_SECRET as string
+        const options: SignOptions = {
+            expiresIn: `${jwtConfig.refreshToken.expiresIn}`
         }
-        return jwt.sign({userId,role,email},secreat,options)
+        return jwt.sign({ userId, role, email }, secreat, options)
     }
     generateAccessToken(userId: string, role: TRole, email: string): string {
-        
-        const secreat:Secret = env.JWT_ACCESS_SECRET as string
-        const options:SignOptions = {
-            expiresIn:`${jwtConfig.accessToken.expiresIn}`
+
+        const secreat: Secret = env.JWT_ACCESS_SECRET as string
+        const options: SignOptions = {
+            expiresIn: `${jwtConfig.accessToken.expiresIn}`
         }
-        return jwt.sign({userId,role,email},secreat,options)
+        return jwt.sign({ userId, role, email }, secreat, options)
     }
-    verifyTokens(refreashToken: string): JwtPayload {
-        const decoded = jwt.verify(refreashToken,env.JWT_REFREASH_SECRET as string)
-        return decoded as JwtPayload
+    verifyAccessToken(token: string): JwtPayload | null {
+        try {
+            const decoded = jwt.verify(
+                token,
+                env.JWT_ACCESS_SECRET as string
+            );
+
+            return decoded as JwtPayload;
+
+        } catch (error: any) {
+
+            if (error.name === "TokenExpiredError") {
+                console.log("⏰ Token expired");
+                return null;
+            }
+
+            console.log("❌ Invalid token");
+            return null;
+        }
+    }
+    verifyRefreashToken(token: string): JwtPayload | null {
+        try {
+            const decoded = jwt.verify(
+                token,
+                env.JWT_REFREASH_SECRET as string
+            );
+
+            return decoded as JwtPayload;
+
+        } catch (error: any) {
+
+            if (error.name === "TokenExpiredError") {
+                console.log("⏰ Token expired");
+                return null;
+            }
+
+            console.log("❌ Invalid token");
+            return null;
+        }
     }
 }

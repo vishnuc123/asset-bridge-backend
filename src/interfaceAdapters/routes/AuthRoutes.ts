@@ -6,6 +6,7 @@ import type { CustomRequest } from "../../utils/CustomRequest.js";
 import { attachRole } from "../../middlewares/attachRole.js";
 import { Roles } from "../../constants/Roles.js";
 import { NextFunction } from "express";
+import { AuthMiddleWare } from "../../middlewares/Authenticate.js";
 
 
 @injectable()
@@ -18,6 +19,7 @@ export class UserRoutes extends BaseRoute{
         .post("/signup",attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.register(req,res,next))
         .post('/otp/verifyOtp',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.verifyOtp(req,res,next))
         .post('/login/',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.login(req,res,next))
-        .post('/refreash',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.verifyRefreash(req,res,next))
+        .post('/refresh',(req:CustomRequest,res,next) => this.authController.verifyRefreash(req,res,next))
+        .get('/me',AuthMiddleWare,(req:CustomRequest,res,next) => this.authController.GetCurrentUser(req,res,next))
     }
 }

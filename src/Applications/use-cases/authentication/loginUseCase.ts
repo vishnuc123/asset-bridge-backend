@@ -39,7 +39,7 @@ export class LoginUseCase implements ILoginUseCase {
 
         const accessToken = this._authService.generateAccessToken(user.id,role,user.email)
         const refreashToken = this._authService.generateRefreashToken(user.id,role,user.email)
-        await this._redisService.StoreRefreashToken(user.id,refreashToken,jwtConfig.refreshToken.maxAge/1000)
+        await this._redisService.storeRefreshToken(user.id,refreashToken,jwtConfig.refreshToken.maxAge/1000)
         const mapped = MapResponse.MapUserResponseToDto(user)
         return {
             refreashToken,

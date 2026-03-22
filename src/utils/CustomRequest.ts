@@ -5,7 +5,8 @@ export interface CustomRequest extends Request{
     role?:TRole,
     user?:{
         userid:string,
-        id:string,
+        role:string,
+        email:string
         // role?:TRole;
     }|null
 }

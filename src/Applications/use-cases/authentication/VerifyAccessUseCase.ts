@@ -6,6 +6,7 @@ import { AppError } from "../../../utils/AppError";
 import { logger } from "../../../utils/Logger";
 import { HttpStatusCode } from "../../../constants/HttpStatusCodes";
 import { RedisService } from "../../../infrastructure/service/RedisService";
+import { JwtPayload } from "jsonwebtoken";
 
 @injectable()
 export class VerifyAccessUseCase implements IVerifyAccessUseCase {
@@ -14,14 +15,14 @@ export class VerifyAccessUseCase implements IVerifyAccessUseCase {
         @inject(Tokens.redisService) private _redisService: RedisService
     ) { }
    async executeToken(refreashToken: string): Promise<{accessToken: string}>  {
-        const decoded = this._authService.verifyTokens(refreashToken)
+        const decoded = this._authService.verifyRefreashToken(refreashToken)
         if (!decoded) {
             logger.info("failed to create token")
             throw new AppError("token is not verified", HttpStatusCode.UNAUTHORIZED)
         }
         const { userId, role, email } = decoded
-        const storedToken = await this._redisService.get(userId)
-
+        const storedToken = await this._redisService.getStoredRefreshToken(userId)
+        console.log("storedToken",storedToken)
         if (!storedToken || storedToken !== refreashToken) {
             throw new AppError("Refresh token expired or invalid", HttpStatusCode.UNAUTHORIZED)
         }

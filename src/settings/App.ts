@@ -6,6 +6,7 @@ import { Tokens } from "../constants/Tokens";
 import { errorHandler } from "../middlewares/ErrorHandler";
 import { env } from "../infrastructure/config/env/env";
 import cors from "cors"
+import cookieParser from "cookie-parser"
 
 export class Settings {
     public App: Application;
@@ -21,6 +22,7 @@ export class Settings {
     }
 
     private setGlobalMiddlewares(): void {
+        this.App.use(cookieParser())
         this.App.use(express.json())
         this.App.use(express.urlencoded({ extended: true }))
 

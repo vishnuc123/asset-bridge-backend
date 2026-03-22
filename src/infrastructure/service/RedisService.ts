@@ -46,8 +46,13 @@ export class RedisService implements IredisService {
         return result;
     }
     
-    async StoreRefreashToken(userId:string,refreashToken:string,expiresIn:number){
-        const key = `refreash:${userId}`
+    async storeRefreshToken(userId: string, refreshToken: string, expiresAt: number): Promise<void> {
+        const key = `refresh:${userId}`
+        await this.set(key, refreshToken, expiresAt);
+    }
+
+    async getStoredRefreshToken(userId: string): Promise<string | null> {
+        const key = `refresh:${userId}`
         return await this.get(key)
     }
     

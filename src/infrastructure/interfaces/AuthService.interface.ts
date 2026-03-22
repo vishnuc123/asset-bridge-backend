@@ -11,6 +11,7 @@ export interface IAuthService{
     // resendOtp(userId: string, purpose: 'signup' | 'reset'): Promise<void>
     generateAccessToken(userId:string,role:TRole,email:string):string
     generateRefreashToken(userId:string,role:TRole,email:string):string
-    verifyTokens(refreashToken:string):JwtPayload
+    verifyAccessToken(token:string):JwtPayload|null
+    verifyRefreashToken(token:string):JwtPayload|null
 
 }
