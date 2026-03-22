@@ -15,6 +15,8 @@ import { LoginUseCase } from "../../Applications/use-cases/authentication/loginU
 import { Roles } from "../../constants/Roles.js";
 import { setAccessCookie, setRefreshCookie } from "../../utils/SetCookies.js";
 import { VerifyAccessUseCase } from "../../Applications/use-cases/authentication/VerifyAccessUseCase.js";
+import { _googleLoginUseCase } from "../../Applications/use-cases/authentication/googleLoginUseCase.js";
+import { TRole } from "../../shared/types/CommonTypes.js";
 
 @injectable()
 export class UserController implements IAuthController {
@@ -23,7 +25,8 @@ export class UserController implements IAuthController {
         @inject(Tokens.RegisterUseCase) private _registerUseCase: RegisterUseCase,
         @inject(Tokens.VerifyOtp) private _VerifyOtpUseCase: VerifyOtpUseCase,
         @inject(Tokens.LoginUseCase) private _loginUseCase: LoginUseCase,
-        @inject(Tokens._verifyAccessUseCase) private _VerifyUseCase: VerifyAccessUseCase
+        @inject(Tokens._verifyAccessUseCase) private _VerifyUseCase: VerifyAccessUseCase,
+        @inject(Tokens._GoogleLoginUseCase) private _GoogleLoginUseCase:_googleLoginUseCase
     ) { }
 
     async register(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
@@ -113,5 +116,25 @@ export class UserController implements IAuthController {
         } catch (error) {
             next(error)
         }
+    }
+    async LoginUsingGoogle(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+      try { 
+        const credentialToken = req.body
+        const role = req.role as TRole;
+        console.log(req.body,role)
+        if(!credentialToken || !role){
+            throw new AppError("invalid google credentials or not found",HttpStatusCode.BAD_REQUEST)
+        }
+        const {accessToken,refreshToken,user} = await this._GoogleLoginUseCase.GoogleLogin(credentialToken.credential,role)
+
+        console.log("refreash",refreshToken)
+        console.log("access",accessToken)
+        setAccessCookie(accessToken,res)
+        setRefreshCookie(refreshToken,res)
+        ResponseHandler.success(res,"google login success",user,HttpStatusCode.OK)
+      } catch (error) {
+        next(error)
+      }      
+       
     }
 }

@@ -1,29 +1,76 @@
 import { NextFunction, Response } from "express";
 import { CustomRequest } from "../utils/CustomRequest";
-import { AppError } from "../utils/AppError";
 import { HttpStatusCode } from "../constants/HttpStatusCodes";
 import { container } from "../infrastructure/config/di/containers/Container";
-import { IAuthService } from "../infrastructure/interfaces/AuthService.interface";
-import { Tokens } from "../constants/Tokens";
 import { AuthService } from "../infrastructure/service/AuthService";
+import { Tokens } from "../constants/Tokens";
+import { setAccessCookie } from "../utils/SetCookies";
+import { AppError } from "../utils/AppError";
+import { logger } from "../utils/Logger";
 
-export const AuthMiddleWare =  (req:CustomRequest,res:Response,next:NextFunction) => {
-    const authService = container.get<AuthService>(Tokens.authService)
+export const AuthMiddleWare = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+) => {
+    const authService = container.get<AuthService>(Tokens.authService);
+
+    const accessToken = req.cookies.access_token;
+    const refreshToken = req.cookies.refresh_token;
+
     try {
-        let token = req.cookies.access_token;
-        console.log("access token",token)
-        if(!token){
-            throw new AppError("refresh_token expired or not found",HttpStatusCode.UNAUTHORIZED)
+        if (!accessToken && !refreshToken) {
+            return res.status(HttpStatusCode.FORBIDDEN).json({ message: "Not authenticated" });
         }
-        const decoded = authService.verifyAccessToken(token)
-        console.log("decoded",decoded)
-        if(!decoded){
-            throw new AppError("invalid token while verifying ,failed",HttpStatusCode.UNAUTHORIZED)
+
+        if (accessToken) {
+            const decoded = authService.verifyAccessToken(accessToken);
+
+            if (decoded) {
+                (req as any).user = decoded;
+                return next();
+            }
+
+            console.log("Access token invalid or expired, trying refresh...");
         }
-        (req as any).user = decoded
+
+        if (refreshToken) {
+            const decodedRefresh = authService.verifyRefreashToken(refreshToken);
+
+            if (!decodedRefresh) {
+                // res.clearCookie("access_token");
+                // res.clearCookie("refresh_token");
+
+                 return res.status(HttpStatusCode.FORBIDDEN).json({ message: "Session expired" });
+                // return next();
+            }
+            const { userId, email, role } = decodedRefresh
+
+            const newAccessToken = await authService.generateAccessToken(
+                userId, email, role
+            );
+
+            setAccessCookie(newAccessToken, res);
+
+            const newDecoded = authService.verifyAccessToken(newAccessToken);
+
+            (req as any).user = newDecoded!;
+
+            console.log("Access token refreshed");
+
+            return next();
+        }
+        console.log("Access token refreshed successfully", { Id: req.user?.userid, email: req.user?.email, role: req.user?.role });
         
-        next()
+        logger.info("Access token refreshed successfully",);
+        return next();
+
     } catch (error) {
-        next(error)
+        console.error("Auth middleware error:", error);
+
+        res.clearCookie("access_token");
+        res.clearCookie("refresh_token");
+
+        next(error instanceof AppError ? error : new AppError("Your session has expired. Please sign in again.", HttpStatusCode.UNAUTHORIZED));
     }
-}
+};

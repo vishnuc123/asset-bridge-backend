@@ -11,6 +11,7 @@ import { VerifyOtpUseCase } from "../../../../Applications/use-cases/authenticat
 import { ConfirmRegisterUseCase } from "../../../../Applications/use-cases/authentication/confirmRegisterUseCase.js";
 import { LoginUseCase } from "../../../../Applications/use-cases/authentication/loginUseCase.js";
 import { VerifyAccessUseCase } from "../../../../Applications/use-cases/authentication/VerifyAccessUseCase.js";
+import { _googleLoginUseCase } from "../../../../Applications/use-cases/authentication/googleLoginUseCase.js";
 
 export const authModule = new ContainerModule(({bind}) =>  {
     bind(Tokens.authController).to(UserController)
@@ -25,4 +26,5 @@ export const authModule = new ContainerModule(({bind}) =>  {
     bind(Tokens.RegisterUseCase).to(RegisterUseCase)
     bind(Tokens.ConfirmRegisterUseCase).to(ConfirmRegisterUseCase)
     bind(Tokens._verifyAccessUseCase).to(VerifyAccessUseCase)
+    bind(Tokens._GoogleLoginUseCase).to(_googleLoginUseCase)
 })

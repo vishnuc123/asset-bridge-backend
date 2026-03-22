@@ -20,6 +20,7 @@ export class UserRoutes extends BaseRoute{
         .post('/otp/verifyOtp',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.verifyOtp(req,res,next))
         .post('/login/',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.login(req,res,next))
         .post('/refresh',(req:CustomRequest,res,next) => this.authController.verifyRefreash(req,res,next))
-        .get('/me',AuthMiddleWare,(req:CustomRequest,res,next) => this.authController.GetCurrentUser(req,res,next))
+        .post('/google-login',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.LoginUsingGoogle(req,res,next))
+        .get('/me',AuthMiddleWare,attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.GetCurrentUser(req,res,next))
     }
 }

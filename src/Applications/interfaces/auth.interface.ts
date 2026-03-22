@@ -17,3 +17,6 @@ export interface IConfirmRegisterUseCase{
 export interface IVerifyAccessUseCase{
     executeToken(refreashToken:string):Promise<{accessToken:string}>
 }
+export interface IGoogleLoginUseCase{
+    GoogleLogin(googleToken:string,role:TRole):Promise< {accessToken:string,refreshToken:string,user:TUserResponseDto}>
+}

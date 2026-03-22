@@ -16,6 +16,7 @@ export const Tokens = {
     RegisterUseCase:Symbol.for("RegisterUseCase"),
     ConfirmRegisterUseCase:Symbol.for("ConfirmRegisterUseCase"),
     _verifyAccessUseCase:Symbol.for("VerifyAccessUseCase"),
+    _GoogleLoginUseCase:Symbol.for("GoogleLoginUseCase"),
 
     // routes
     authUserRoute:Symbol.for("authUserRoutes")

@@ -75,7 +75,7 @@ export class AuthService implements IAuthService {
     generateRefreashToken(userId: string, role: TRole, email: string): string {
         const secreat: Secret = env.JWT_REFREASH_SECRET as string
         const options: SignOptions = {
-            expiresIn: `${jwtConfig.refreshToken.expiresIn}`
+            expiresIn: `${jwtConfig.refreshToken.maxAge}`
         }
         return jwt.sign({ userId, role, email }, secreat, options)
     }
@@ -83,7 +83,7 @@ export class AuthService implements IAuthService {
 
         const secreat: Secret = env.JWT_ACCESS_SECRET as string
         const options: SignOptions = {
-            expiresIn: `${jwtConfig.accessToken.expiresIn}`
+            expiresIn: `${jwtConfig.accessToken.maxAge}`
         }
         return jwt.sign({ userId, role, email }, secreat, options)
     }

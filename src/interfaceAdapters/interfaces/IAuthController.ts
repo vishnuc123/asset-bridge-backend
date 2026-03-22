@@ -6,4 +6,5 @@ export interface IAuthController{
     verifyOtp(req:CustomRequest,res:Response,next:NextFunction):Promise<void>
     login(req:CustomRequest,res:Response,next:NextFunction):Promise<void>
     verifyRefreash(req:CustomRequest,res:Response,next:NextFunction):Promise<void>
+    LoginUsingGoogle(req:CustomRequest,res:Response,next:NextFunction):Promise<void>
 }
