@@ -19,6 +19,7 @@ export const Tokens = {
     _verifyAccessUseCase:Symbol.for("VerifyAccessUseCase"),
     _GoogleLoginUseCase:Symbol.for("GoogleLoginUseCase"),
     _setRoleUseCase:Symbol.for("SetRoleUseCase"),
+    _logoutUseCase:Symbol.for("LogoutUseCase"),
 
 
     // adminusecasess

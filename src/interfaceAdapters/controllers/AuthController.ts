@@ -18,17 +18,19 @@ import { VerifyAccessUseCase } from "../../Applications/use-cases/authentication
 import { _googleLoginUseCase } from "../../Applications/use-cases/authentication/googleLoginUseCase.js";
 import { TRole } from "../../shared/types/CommonTypes.js";
 import { SetRoleUsecase } from "../../Applications/use-cases/authentication/setRoleUseCase.js";
+import { IGoogleLoginUseCase, ILoginUseCase, ILogoutUseCases, IRegisterUseCase, IVerifyAccessUseCase, IVerifyOtpUseCase } from "../../Applications/interfaces/auth.interface.js";
 
 @injectable()
 export class UserController implements IAuthController {
     constructor(
         // @inject(Tokens.LoginUseCase) private _loginUseCase: ILoginUseCase,
-        @inject(Tokens.RegisterUseCase) private _registerUseCase: RegisterUseCase,
-        @inject(Tokens.VerifyOtp) private _VerifyOtpUseCase: VerifyOtpUseCase,
-        @inject(Tokens.LoginUseCase) private _loginUseCase: LoginUseCase,
-        @inject(Tokens._verifyAccessUseCase) private _VerifyUseCase: VerifyAccessUseCase,
-        @inject(Tokens._GoogleLoginUseCase) private _GoogleLoginUseCase: _googleLoginUseCase,
-        @inject(Tokens._setRoleUseCase) private _setRoleUseCase: SetRoleUsecase
+        @inject(Tokens.RegisterUseCase) private _registerUseCase: IRegisterUseCase,
+        @inject(Tokens.VerifyOtp) private _VerifyOtpUseCase: IVerifyOtpUseCase,
+        @inject(Tokens.LoginUseCase) private _loginUseCase: ILoginUseCase,
+        @inject(Tokens._verifyAccessUseCase) private _VerifyUseCase: IVerifyAccessUseCase,
+        @inject(Tokens._GoogleLoginUseCase) private _GoogleLoginUseCase: IGoogleLoginUseCase,
+        @inject(Tokens._setRoleUseCase) private _setRoleUseCase: SetRoleUsecase,
+        @inject(Tokens._logoutUseCase)private _logoutUseCase:ILogoutUseCases
     ) { }
 
     async register(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
@@ -82,8 +84,8 @@ export class UserController implements IAuthController {
         try {
             const { email, password } = req.body
             const role = req.role as TRole
-            console.log(email,password,role);
-            
+            console.log(email, password, role);
+
 
             const { refreashToken, accessToken, user } = await this._loginUseCase.login(email, password, role)
             setAccessCookie(accessToken, res)
@@ -151,25 +153,46 @@ export class UserController implements IAuthController {
 
     }
     async setRole(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
-       try {
-         const { role } = req.body
-        const userDetails = req.user
-        console.log("setrole",userDetails);
-        
-        if (!userDetails) {
-            throw new AppError("unauthorized access", HttpStatusCode.UNAUTHORIZED)
-        }
-        if (!role) {
-            throw new AppError("role is required", HttpStatusCode.BAD_REQUEST)
-        }
-        const { accessToken, refreashToken,user } = await this._setRoleUseCase.setRole(userDetails.userId, role as TRole)
+        try {
+            const { role } = req.body
+            const userDetails = req.user
+            console.log("setrole", userDetails);
 
-        setAccessCookie(accessToken, res);
-        setRefreshCookie(refreashToken, res);
+            if (!userDetails) {
+                throw new AppError("unauthorized access", HttpStatusCode.UNAUTHORIZED)
+            }
+            if (!role) {
+                throw new AppError("role is required", HttpStatusCode.BAD_REQUEST)
+            }
+            const { accessToken, refreashToken, user } = await this._setRoleUseCase.setRole(userDetails.userId, role as TRole)
 
-        ResponseHandler.success(res, "Role updated successfully",user, HttpStatusCode.OK);
-       } catch (error) {
-        next(error)
-       }
+            setAccessCookie(accessToken, res);
+            setRefreshCookie(refreashToken, res);
+
+            ResponseHandler.success(res, "Role updated successfully", user, HttpStatusCode.OK);
+        } catch (error) {
+            next(error)
+        }
+    }
+
+
+    async logout(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const accessToken = req.cookies['access_token'];
+        const refreshToken = req.cookies['refresh_token'];
+
+        if (!accessToken || !refreshToken) {
+            throw new AppError("jwt tokens are missing", HttpStatusCode.BAD_REQUEST);
+        }
+
+        const { message } = await this._logoutUseCase.logout(accessToken, refreshToken);
+
+        res.clearCookie('access_token', { httpOnly: true, secure: true, sameSite: 'strict' });
+        res.clearCookie('refresh_token', { httpOnly: true, secure: true, sameSite: 'strict' });
+
+        ResponseHandler.success(res, message, null, HttpStatusCode.OK);
+        } catch (error) {
+            next(error)
+        }
     }
 }

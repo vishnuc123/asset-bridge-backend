@@ -8,4 +8,5 @@ export interface IAuthController{
     verifyRefreash(req:CustomRequest,res:Response,next:NextFunction):Promise<void>
     LoginUsingGoogle(req:CustomRequest,res:Response,next:NextFunction):Promise<void>
     setRole(req:CustomRequest,res:Response,next:NextFunction):Promise<void>
+    logout(req:CustomRequest,res:Response,next:NextFunction):Promise<void>
 }

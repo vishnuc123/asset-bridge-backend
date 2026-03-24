@@ -21,6 +21,7 @@ export class UserRoutes extends BaseRoute{
         .post('/login',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.login(req,res,next))
         .post('/refresh',(req:CustomRequest,res,next) => this.authController.verifyRefreash(req,res,next))
         .post('/google-login',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.LoginUsingGoogle(req,res,next))
+        .post('/logout',AuthMiddleWare,attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.logout(req,res,next))
         .post('/set-role',AuthMiddleWare,(req:CustomRequest,res,next) => this.authController.setRole(req,res,next))
         .get('/me',AuthMiddleWare,attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.GetCurrentUser(req,res,next))
     }
