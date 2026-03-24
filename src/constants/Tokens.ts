@@ -1,6 +1,7 @@
 export const Tokens = {
     // controllers
     authController : Symbol.for("AuthController"),
+    adminController:Symbol.for("AdminController"),
 
     // Repostiories
     authRepository : Symbol.for("AuthRepository"),
@@ -17,9 +18,22 @@ export const Tokens = {
     ConfirmRegisterUseCase:Symbol.for("ConfirmRegisterUseCase"),
     _verifyAccessUseCase:Symbol.for("VerifyAccessUseCase"),
     _GoogleLoginUseCase:Symbol.for("GoogleLoginUseCase"),
+    _setRoleUseCase:Symbol.for("SetRoleUseCase"),
+
+
+    // adminusecasess
+    getAllUsersUseCase:Symbol.for("getAllUsersUseCase"),
+    changeUserStatusUseCase:Symbol.for("changeUserStatusUseCase"),
+
 
     // routes
-    authUserRoute:Symbol.for("authUserRoutes")
+    authUserRoute:Symbol.for("authUserRoutes"),
+    InvestorRoutes:Symbol.for("InvestorRoutes"),
+    AdminRoutes:Symbol.for("AdminRoutes")
+
+    
+
+
 
 
 }

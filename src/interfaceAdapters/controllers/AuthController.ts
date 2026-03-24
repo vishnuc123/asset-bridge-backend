@@ -17,6 +17,7 @@ import { setAccessCookie, setRefreshCookie } from "../../utils/SetCookies.js";
 import { VerifyAccessUseCase } from "../../Applications/use-cases/authentication/VerifyAccessUseCase.js";
 import { _googleLoginUseCase } from "../../Applications/use-cases/authentication/googleLoginUseCase.js";
 import { TRole } from "../../shared/types/CommonTypes.js";
+import { SetRoleUsecase } from "../../Applications/use-cases/authentication/setRoleUseCase.js";
 
 @injectable()
 export class UserController implements IAuthController {
@@ -26,20 +27,29 @@ export class UserController implements IAuthController {
         @inject(Tokens.VerifyOtp) private _VerifyOtpUseCase: VerifyOtpUseCase,
         @inject(Tokens.LoginUseCase) private _loginUseCase: LoginUseCase,
         @inject(Tokens._verifyAccessUseCase) private _VerifyUseCase: VerifyAccessUseCase,
-        @inject(Tokens._GoogleLoginUseCase) private _GoogleLoginUseCase:_googleLoginUseCase
+        @inject(Tokens._GoogleLoginUseCase) private _GoogleLoginUseCase: _googleLoginUseCase,
+        @inject(Tokens._setRoleUseCase) private _setRoleUseCase: SetRoleUsecase
     ) { }
 
     async register(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
         try {
             logger.info(req.body)
             const { firstname, lastname, email, password, } = req.body
+            const role = req.role
+            console.log("register req.role", role);
 
+            if (!role) {
+                throw new AppError("Role not provided", HttpStatusCode.BAD_REQUEST);
+            }
             const userdata: TCreateUserDto = {
                 firstname,
                 lastname,
                 email,
                 password,
-                role: req.role || Roles.user_role
+                roles: [role],
+                isBlocked: false,
+                status: "active"
+
             }
             const newUser = await this._registerUseCase.Regiser(userdata)
             ResponseHandler.success(res, AUTH_RES_MESSAGES.register, newUser, HttpStatusCode.OK)
@@ -71,13 +81,15 @@ export class UserController implements IAuthController {
     async login(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
         try {
             const { email, password } = req.body
-            const role = req.role || Roles.user_role
+            const role = req.role as TRole
+            console.log(email,password,role);
+            
 
             const { refreashToken, accessToken, user } = await this._loginUseCase.login(email, password, role)
             setAccessCookie(accessToken, res)
             setRefreshCookie(refreashToken, res)
-            logger.info(`user: ${user.email} has been loggedin succesfully`)
-            ResponseHandler.success(res, "user login Successfully", user, HttpStatusCode.OK)
+            logger.info(`${role}: ${user.email} has been loggedin succesfully`)
+            ResponseHandler.success(res, `${role} login Successfully`, user, HttpStatusCode.OK)
         } catch (error) {
             next(error)
         }
@@ -87,7 +99,7 @@ export class UserController implements IAuthController {
         try {
             console.log("hello fromm mrefreag")
             const refreshToken = req.cookies.refresh_token as string
-            console.log("refreash token",refreshToken)
+            console.log("refreash token", refreshToken)
 
             if (!refreshToken) {
                 throw new AppError("refreash Token expired or not found", HttpStatusCode.NOT_FOUND)
@@ -112,29 +124,52 @@ export class UserController implements IAuthController {
             }
 
 
+
             ResponseHandler.success(res, "userfetched success", user, HttpStatusCode.OK)
         } catch (error) {
             next(error)
         }
     }
     async LoginUsingGoogle(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
-      try { 
-        const credentialToken = req.body
-        const role = req.role as TRole;
-        console.log(req.body,role)
-        if(!credentialToken || !role){
-            throw new AppError("invalid google credentials or not found",HttpStatusCode.BAD_REQUEST)
-        }
-        const {accessToken,refreshToken,user} = await this._GoogleLoginUseCase.GoogleLogin(credentialToken.credential,role)
+        try {
+            const credentialToken = req.body
+            const role = req.role as TRole;
+            console.log(req.body, role)
+            if (!credentialToken || !role) {
+                throw new AppError("invalid google credentials or not found", HttpStatusCode.BAD_REQUEST)
+            }
+            const { accessToken, refreshToken, user } = await this._GoogleLoginUseCase.GoogleLogin(credentialToken.credential, role)
 
-        console.log("refreash",refreshToken)
-        console.log("access",accessToken)
-        setAccessCookie(accessToken,res)
-        setRefreshCookie(refreshToken,res)
-        ResponseHandler.success(res,"google login success",user,HttpStatusCode.OK)
-      } catch (error) {
+            console.log("refreash", refreshToken)
+            console.log("access", accessToken)
+            setAccessCookie(accessToken, res)
+            setRefreshCookie(refreshToken, res)
+            ResponseHandler.success(res, "google login success", user, HttpStatusCode.OK)
+        } catch (error) {
+            next(error)
+        }
+
+    }
+    async setRole(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+       try {
+         const { role } = req.body
+        const userDetails = req.user
+        console.log("setrole",userDetails);
+        
+        if (!userDetails) {
+            throw new AppError("unauthorized access", HttpStatusCode.UNAUTHORIZED)
+        }
+        if (!role) {
+            throw new AppError("role is required", HttpStatusCode.BAD_REQUEST)
+        }
+        const { accessToken, refreashToken,user } = await this._setRoleUseCase.setRole(userDetails.userId, role as TRole)
+
+        setAccessCookie(accessToken, res);
+        setRefreshCookie(refreashToken, res);
+
+        ResponseHandler.success(res, "Role updated successfully",user, HttpStatusCode.OK);
+       } catch (error) {
         next(error)
-      }      
-       
+       }
     }
 }

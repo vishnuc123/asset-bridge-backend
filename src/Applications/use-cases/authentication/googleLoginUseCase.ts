@@ -8,16 +8,16 @@ import { AppError } from "../../../utils/AppError";
 import { HttpStatusCode } from "../../../constants/HttpStatusCodes";
 import { inject, injectable } from "inversify";
 import { Tokens } from "../../../constants/Tokens";
-import { userRepository } from "../../../infrastructure/database/repositories/userRepository";
 import { AuthService } from "../../../infrastructure/service/AuthService";
 import { RedisService } from "../../../infrastructure/service/RedisService";
 import { jwtConfig } from "../../../infrastructure/config/jwt/jwtConfig";
 import { MapResponse } from "../../../utils/MapResponse";
+import { IUserRepository } from "../../../domain/repositories/IUserRepository";
 
 @injectable()
 export class _googleLoginUseCase implements IGoogleLoginUseCase {
     constructor(
-        @inject(Tokens.authRepository) private _authRepository: userRepository,
+        @inject(Tokens.authRepository) private _authRepository: IUserRepository,
         @inject(Tokens.authService) private _authService: AuthService,
         @inject(Tokens.redisService) private _redisService: RedisService
 
@@ -26,16 +26,19 @@ export class _googleLoginUseCase implements IGoogleLoginUseCase {
         const client = new OAuth2Client(env.GOOGLE_ID)
         let payload: TokenPayload | undefined;
         console.log(env.GOOGLE_ID);
-        
+        if (!role) {
+            throw new AppError("Role is required", HttpStatusCode.BAD_REQUEST);
+        }
+
         try {
             const ticket = await client.verifyIdToken({
                 idToken: googleToken,
-                audience:env.GOOGLE_ID
+                audience: env.GOOGLE_ID
             })
 
             payload = ticket.getPayload()
         } catch (error: any) {
-            console.log("full error",error)
+            console.log("full error", error)
             logger.error("google ticket verification failed", error)
             throw new AppError("invalid google credentials", HttpStatusCode.UNAUTHORIZED)
         }
@@ -52,22 +55,33 @@ export class _googleLoginUseCase implements IGoogleLoginUseCase {
                 firstname: payload.given_name || "google",
                 lastname: payload.family_name || "User",
                 email: email,
+                status: "active",
+                isBlocked: false,
                 password: await this._authService.hashPassword(Math.random().toString(36).slice(-8)),
-                role: role
+                roles: [role]
             }
-            user = await this._authRepository.create(newUser)
 
 
             // await Promise.all([
             // wallet creation need to implment
+            user = await this._authRepository.create(newUser)
 
             // ])
+        } else {
+            if (!user?.roles.includes(role)) {
+                // throw new AppError("i
+                // nvalid Role", HttpStatusCode.FORBIDDEN)
+                const updatedRoles = [...user.roles, role];
+                user = await this._authRepository.update(user._id.toString(), {
+                    roles: updatedRoles
+                });
+                // user.roles.push(role)
+
+            }
+
         }
-        if (user.role !== role) {
-            throw new AppError("invalid Role", HttpStatusCode.FORBIDDEN)
-        }
-        const userbyemail = await this._authRepository.findByEmail(user.email)
-        if (!user.email || !userbyemail?.id) {
+        // const userbyemail = await this._authRepository.findByEmail(user.email)
+        if (!user || !user._id) {
             throw new AppError("user email not found or not exist", HttpStatusCode.NOT_FOUND)
         }
         const updateData: Record<string, any> = { isGoogle: true }
@@ -75,7 +89,7 @@ export class _googleLoginUseCase implements IGoogleLoginUseCase {
             updateData.profileImage = payload.picture;
         }
 
-        const updatedUser = await this._authRepository.update(userbyemail.id, updateData)
+        const updatedUser = await this._authRepository.update(user._id.toString(), updateData)
         if (!updatedUser || !updatedUser._id) {
             throw new AppError("updating user failed,google", HttpStatusCode.INTERNAL_SERVER_ERROR);
         }
@@ -86,9 +100,9 @@ export class _googleLoginUseCase implements IGoogleLoginUseCase {
         // }
 
         //assigning tokens for user
-        const accessToken = this._authService.generateAccessToken(updatedUser.id, updatedUser.role, updatedUser.email);
-        const refreshToken = this._authService.generateRefreashToken(updatedUser.id, updatedUser.role, updatedUser.email);
-        await this._redisService.storeRefreshToken(updatedUser.id, refreshToken, jwtConfig.refreshToken.maxAge / 1000);
+        const accessToken = this._authService.generateAccessToken(updatedUser._id.toString(), role, updatedUser.email);
+        const refreshToken = this._authService.generateRefreashToken(updatedUser._id.toString(), role, updatedUser.email);
+        await this._redisService.storeRefreshToken(updatedUser._id.toString(), refreshToken, jwtConfig.refreshToken.maxAge / 1000);
 
         const mappedUser = MapResponse.MapUserResponseToDto(updatedUser)
 

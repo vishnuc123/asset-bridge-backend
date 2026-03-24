@@ -30,12 +30,17 @@ const UserSchema = new Schema<IUserDocument>(
       required: true,
     },
 
-    role: {
-      type: String,
+    roles: {
+      type: [String],
       required: true,
       enum: ["User", "Admin", "Property_owner","Investor"], 
+      default:[]
     },
-
+    status:{
+      type:String,
+      required:true,
+      enum:["pending","active","banned"]
+    },
     phone: {
       type: String,
       // required: true,
@@ -59,6 +64,11 @@ const UserSchema = new Schema<IUserDocument>(
       enum: ["pending", "verified", "rejected"], 
       default: "pending",
     },
+    isBlocked:{
+      type:Boolean,
+      required:true,
+      default:false
+    },
 
     emailVerified: {
       type: Boolean,
@@ -71,7 +81,7 @@ const UserSchema = new Schema<IUserDocument>(
     },
   },
   {
-    timestamps: true, // handles createdAt & updatedAt automatically
+    timestamps: true,
   }
 );
 

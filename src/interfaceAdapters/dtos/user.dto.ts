@@ -1,11 +1,13 @@
-import type { TRole } from "../../shared/types/CommonTypes.js"
+import type { TRole, TUserStatus } from "../../shared/types/CommonTypes.js"
 
 export type TUserResponseDto =  {
-     id: string
+    userId: string
     firstname: string
     lastname: string
     email: string
-    role:TRole
+    roles:TRole[]
+    status:TUserStatus
+    isBlocked:boolean,
     phone: string
     walletId?: string
 
@@ -17,8 +19,8 @@ export type TUserResponseDto =  {
     emailVerified: boolean
     phoneVerified: boolean
 
-    createdAt: Date
-    updatedAt: Date
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export type TCreateUserDto = {
@@ -26,6 +28,17 @@ export type TCreateUserDto = {
     lastname: string
     email: string
     password:string
-    role:TRole
+    roles:TRole[]
+    status:TUserStatus
+    isBlocked:boolean
     // phone: string
 }
+
+export type TUserDataDto ={
+    firstname:string,
+    lastname:string,
+    email:string,
+    status:string,
+    isblocked:boolean,
+    createdAt:Date,
+} 

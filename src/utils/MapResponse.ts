@@ -4,12 +4,14 @@ import { TUserResponseDto } from "../interfaceAdapters/dtos/user.dto";
 export class MapResponse{
     static MapUserResponseToDto(user:IUserModel):TUserResponseDto{
         return {
-            id:user.id as string ,
+            userId:user._id.toString() ,
             firstname:user.firstname,
             lastname:user.lastname,
             email:user.email,
             phone:user.phone,
-            role:user.role,
+            roles:user.roles,
+            isBlocked:user.isBlocked,
+            status:user.status,
             kycStatus:user.kycStatus,
             phoneVerified:user.phoneVerified,
             emailVerified:user.emailVerified,

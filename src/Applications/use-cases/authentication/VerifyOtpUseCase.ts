@@ -15,6 +15,7 @@ export class VerifyOtpUseCase implements IVerifyOtpUseCase{
     ){}
     async VerifyOtp(userId: string, otp: string, purpose: "signup" | "reset"): Promise<{ message: string; data: TOtpData; }> {
         const data = await this._authService.verifyOtp(userId,otp)
+        
         if(!data){
             throw new AppError("otp error",HttpStatusCode.BAD_REQUEST)
         }

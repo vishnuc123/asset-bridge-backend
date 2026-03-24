@@ -2,7 +2,7 @@ import { ContainerModule } from "inversify";
 import { Tokens } from "../../../../constants/Tokens.js";
 import {  UserController } from "../../../../interfaceAdapters/controllers/AuthController.js";
 import { UserRoutes } from "../../../../interfaceAdapters/routes/AuthRoutes.js";
-import { userRepository } from "../../../database/repositories/userRepository.js";
+import { UserRepository } from "../../../database/repositories/userRepository.js";
 import { RegisterUseCase } from "../../../../Applications/use-cases/authentication/registerUseCase.js";
 import { AuthService } from "../../../service/AuthService.js";
 import { RedisService } from "../../../service/RedisService.js";
@@ -12,10 +12,11 @@ import { ConfirmRegisterUseCase } from "../../../../Applications/use-cases/authe
 import { LoginUseCase } from "../../../../Applications/use-cases/authentication/loginUseCase.js";
 import { VerifyAccessUseCase } from "../../../../Applications/use-cases/authentication/VerifyAccessUseCase.js";
 import { _googleLoginUseCase } from "../../../../Applications/use-cases/authentication/googleLoginUseCase.js";
+import { SetRoleUsecase } from "../../../../Applications/use-cases/authentication/setRoleUseCase.js";
 
 export const authModule = new ContainerModule(({bind}) =>  {
     bind(Tokens.authController).to(UserController)
-    bind(Tokens.authRepository).to(userRepository)
+    bind(Tokens.authRepository).to(UserRepository)
     bind(Tokens.authService).to(AuthService)
     bind(Tokens.authUserRoute).to(UserRoutes)
     bind(Tokens.redisService).to(RedisService)
@@ -27,4 +28,5 @@ export const authModule = new ContainerModule(({bind}) =>  {
     bind(Tokens.ConfirmRegisterUseCase).to(ConfirmRegisterUseCase)
     bind(Tokens._verifyAccessUseCase).to(VerifyAccessUseCase)
     bind(Tokens._GoogleLoginUseCase).to(_googleLoginUseCase)
+    bind(Tokens._setRoleUseCase).to(SetRoleUsecase)
 })

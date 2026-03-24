@@ -7,6 +7,8 @@ import { errorHandler } from "../middlewares/ErrorHandler";
 import { env } from "../infrastructure/config/env/env";
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import { AdminRoutes } from "../interfaceAdapters/routes/AdminRoutes";
+import { InvestorRoutes } from "../interfaceAdapters/routes/InvestorRoutes";
 
 export class Settings {
     public App: Application;
@@ -45,6 +47,10 @@ export class Settings {
 
         const userRoutes = container.get<UserRoutes>(Tokens.authUserRoute)
         this.App.use("/api/user", userRoutes.router)
+        const adminRoutes = container.get<AdminRoutes>(Tokens.AdminRoutes)
+        this.App.use("/api/admin",adminRoutes.router)
+        const InvestorRoutes = container.get<InvestorRoutes>(Tokens.InvestorRoutes)
+        this.App.use("/api/investor",InvestorRoutes.router)
     }
     public listen(port: number): void {
         this.server.listen(port, () => {

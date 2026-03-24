@@ -1,12 +1,12 @@
 import { NextFunction, Response } from "express";
 import { CustomRequest } from "../utils/CustomRequest";
-import { HttpStatusCode } from "../constants/HttpStatusCodes";
 import { container } from "../infrastructure/config/di/containers/Container";
-import { AuthService } from "../infrastructure/service/AuthService";
+import { UserRepository } from "../infrastructure/database/repositories/userRepository";
 import { Tokens } from "../constants/Tokens";
-import { setAccessCookie } from "../utils/SetCookies";
+import { AuthService } from "../infrastructure/service/AuthService";
+import { HttpStatusCode } from "../constants/HttpStatusCodes";
 import { AppError } from "../utils/AppError";
-import { logger } from "../utils/Logger";
+import { setAccessCookie } from "../utils/SetCookies";
 
 export const AuthMiddleWare = async (
     req: CustomRequest,
@@ -14,56 +14,95 @@ export const AuthMiddleWare = async (
     next: NextFunction
 ) => {
     const authService = container.get<AuthService>(Tokens.authService);
+    const authRepository = container.get<UserRepository>(Tokens.authRepository);
 
     const accessToken = req.cookies.access_token;
     const refreshToken = req.cookies.refresh_token;
 
     try {
         if (!accessToken && !refreshToken) {
-            return res.status(HttpStatusCode.FORBIDDEN).json({ message: "Not authenticated" });
+            return res.status(HttpStatusCode.FORBIDDEN).json({
+                message: "Not authenticated",
+            });
         }
 
+        // 🔹 1. Try access token
         if (accessToken) {
             const decoded = authService.verifyAccessToken(accessToken);
 
             if (decoded) {
-                (req as any).user = decoded;
+                // const user = await authRepository.findByEmail(decoded.email);
+
+                const user = await authRepository.findById(decoded.userId);
+                
+                if (!user) {
+                    res.clearCookie("access_token");
+                    res.clearCookie("refresh_token");
+                    
+                    throw new AppError("User deleted", HttpStatusCode.UNAUTHORIZED);
+                }
+                
+                (req as any).user = {
+                    userId:user._id,
+                    email:user.email,
+                    roles:user.roles,
+                    activeRole:decoded.role
+                }
+                req.role = decoded.role
+                
                 return next();
             }
-
-            console.log("Access token invalid or expired, trying refresh...");
+            
+            // console.log("Access token expired, trying refresh...");
         }
-
+        
+        // 🔹 2. Try refresh token
         if (refreshToken) {
             const decodedRefresh = authService.verifyRefreashToken(refreshToken);
-
+            const user = await authRepository.findById(decodedRefresh?.userId);
+            
             if (!decodedRefresh) {
-                // res.clearCookie("access_token");
-                // res.clearCookie("refresh_token");
+                res.clearCookie("access_token");
+                res.clearCookie("refresh_token");
 
-                 return res.status(HttpStatusCode.FORBIDDEN).json({ message: "Session expired" });
-                // return next();
+                return res.status(HttpStatusCode.FORBIDDEN).json({
+                    message: "Session expired",
+                });
             }
-            const { userId, email, role } = decodedRefresh
 
-            const newAccessToken = await authService.generateAccessToken(
-                userId, email, role
+            const { userId, role, email } = decodedRefresh;
+
+           
+            const newAccessToken = authService.generateAccessToken(
+                userId,
+                role,
+                email
             );
 
             setAccessCookie(newAccessToken, res);
 
             const newDecoded = authService.verifyAccessToken(newAccessToken);
 
-            (req as any).user = newDecoded!;
+            if (!newDecoded) {
+                throw new AppError("Token regeneration failed", HttpStatusCode.UNAUTHORIZED);
+            }
 
-            console.log("Access token refreshed");
+            (req as any).user = {
+                    userId:user?._id,
+                    email:user?.email,
+                    roles:user?.roles,
+                    activeRole:newDecoded.role
+                }
+            req.role = newDecoded.role
+;
 
             return next();
         }
-        console.log("Access token refreshed successfully", { Id: req.user?.userid, email: req.user?.email, role: req.user?.role });
-        
-        logger.info("Access token refreshed successfully",);
-        return next();
+
+        // 🔹 fallback
+        return res.status(HttpStatusCode.FORBIDDEN).json({
+            message: "Authentication failed",
+        });
 
     } catch (error) {
         console.error("Auth middleware error:", error);
@@ -71,6 +110,13 @@ export const AuthMiddleWare = async (
         res.clearCookie("access_token");
         res.clearCookie("refresh_token");
 
-        next(error instanceof AppError ? error : new AppError("Your session has expired. Please sign in again.", HttpStatusCode.UNAUTHORIZED));
+        next(
+            error instanceof AppError
+                ? error
+                : new AppError(
+                    "Your session has expired. Please sign in again.",
+                    HttpStatusCode.UNAUTHORIZED
+                )
+        );
     }
 };

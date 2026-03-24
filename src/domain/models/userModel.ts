@@ -1,12 +1,15 @@
-import type {  TKYC_Status, TRole } from "../../shared/types/CommonTypes.js"
+import { Types } from "mongoose"
+import type { TKYC_Status, TRole, TUserStatus } from "../../shared/types/CommonTypes.js"
 
 export interface IUserModel {
-    id: string
+    _id: Types.ObjectId
     firstname: string
     lastname: string
     email: string
     password: string
-    role: TRole
+    roles: TRole[]
+    status: TUserStatus
+    isBlocked: boolean
 
     phone: string
     walletId?: string
