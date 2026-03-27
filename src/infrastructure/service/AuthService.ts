@@ -98,12 +98,12 @@ export class AuthService implements IAuthService {
 
         } catch (error: any) {
 
-            if (error.name === "TokenExpiredError") {
-                console.log("⏰ Token expired");
+            if (error.name === "tokenexpirederr") {
+                console.log("token expired");
                 return null;
             }
 
-            console.log("❌ Invalid token");
+            console.log("invalid token");
             return null;
         }
     }
@@ -119,12 +119,14 @@ export class AuthService implements IAuthService {
         } catch (error: any) {
 
             if (error.name === "TokenExpiredError") {
-                console.log("⏰ Token expired");
+                console.log("token expired");
                 return null;
             }
 
-            console.log("❌ Invalid token");
+            console.log("invalid token");
             return null;
         }
     }
+
+    
 }

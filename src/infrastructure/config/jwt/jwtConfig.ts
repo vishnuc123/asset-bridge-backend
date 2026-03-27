@@ -4,8 +4,8 @@ export const jwtConfig = {
         maxAge: 1*60* 1000 //1 * 60 * 1000
     },
     refreshToken: {
-        expiresIn: "7d",
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        expiresIn: "1d",
+        maxAge: 1 * 24 * 60 * 60 * 1000
     }
 }
 
@@ -14,5 +14,5 @@ export const otpTimer = {
 }
 
 export const awsS3Timer = {
-    expiresAt: 84600, //one day milliseconds
+    expiresAt: 84600, 
 }

@@ -14,6 +14,8 @@ import { VerifyAccessUseCase } from "../../../../Applications/use-cases/authenti
 import { _googleLoginUseCase } from "../../../../Applications/use-cases/authentication/googleLoginUseCase.js";
 import { SetRoleUsecase } from "../../../../Applications/use-cases/authentication/setRoleUseCase.js";
 import { logoutUseCase } from "../../../../Applications/use-cases/authentication/logoutUseCase.js";
+import { forgetPasswordUseCase } from "../../../../Applications/use-cases/authentication/forgetPasswordUseCase.js";
+import { ResetPassUseCase } from "../../../../Applications/use-cases/authentication/resetPassUseCase.js";
 
 export const authModule = new ContainerModule(({bind}) =>  {
     bind(Tokens.authController).to(UserController)
@@ -31,4 +33,7 @@ export const authModule = new ContainerModule(({bind}) =>  {
     bind(Tokens._GoogleLoginUseCase).to(_googleLoginUseCase)
     bind(Tokens._setRoleUseCase).to(SetRoleUsecase)
     bind(Tokens._logoutUseCase).to(logoutUseCase)
+    bind(Tokens._forgotPassUseCase).to(forgetPasswordUseCase)
+    bind(Tokens._resetPassUseCase).to(ResetPassUseCase)
+  
 })

@@ -27,7 +27,7 @@ export class RedisService implements IredisService {
         const payload = {
             otp,
             data,
-            expiresAt: new Date(Date.now() + 5 * 60 * 1000).getTime(),
+            expiresAt: Date.now()+otpTimer.expiresInSeconds*1000,
         }
         await this.set(userId, payload, otpTimer.expiresInSeconds)
     }

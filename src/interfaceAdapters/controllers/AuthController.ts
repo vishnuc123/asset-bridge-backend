@@ -14,14 +14,19 @@ import { CustomRequest } from "../../utils/CustomRequest.js";
 import { LoginUseCase } from "../../Applications/use-cases/authentication/loginUseCase.js";
 import { Roles } from "../../constants/Roles.js";
 import { setAccessCookie, setRefreshCookie } from "../../utils/SetCookies.js";
-import { VerifyAccessUseCase } from "../../Applications/use-cases/authentication/VerifyAccessUseCase.js";
 import { _googleLoginUseCase } from "../../Applications/use-cases/authentication/googleLoginUseCase.js";
 import { TRole } from "../../shared/types/CommonTypes.js";
 import { SetRoleUsecase } from "../../Applications/use-cases/authentication/setRoleUseCase.js";
-import { IGoogleLoginUseCase, ILoginUseCase, ILogoutUseCases, IRegisterUseCase, IVerifyAccessUseCase, IVerifyOtpUseCase } from "../../Applications/interfaces/auth.interface.js";
+import { IChangePasswordUseCase, IForgotPassUseCase, IGoogleLoginUseCase, ILoginUseCase, ILogoutUseCases, IRegisterUseCase, IResendOtpUseCase, IResetPassUseCase, IVerifyAccessUseCase, IVerifyOtpUseCase } from "../../Applications/interfaces/auth.interface.js";
+import { AUTH_ERROR_MESSAGES } from "../../constants/errorMessages.js";
 
 @injectable()
-export class UserController implements IAuthController {
+export class UserController implements
+
+
+
+
+    IAuthController {
     constructor(
         // @inject(Tokens.LoginUseCase) private _loginUseCase: ILoginUseCase,
         @inject(Tokens.RegisterUseCase) private _registerUseCase: IRegisterUseCase,
@@ -30,15 +35,21 @@ export class UserController implements IAuthController {
         @inject(Tokens._verifyAccessUseCase) private _VerifyUseCase: IVerifyAccessUseCase,
         @inject(Tokens._GoogleLoginUseCase) private _GoogleLoginUseCase: IGoogleLoginUseCase,
         @inject(Tokens._setRoleUseCase) private _setRoleUseCase: SetRoleUsecase,
-        @inject(Tokens._logoutUseCase)private _logoutUseCase:ILogoutUseCases
+        @inject(Tokens._logoutUseCase) private _logoutUseCase: ILogoutUseCases,
+        @inject(Tokens._resetPassUseCase) private _resetPassUseCase: IResetPassUseCase,
+
+        @inject(Tokens._forgotPassUseCase) private forgetPasswordUseCase: IForgotPassUseCase
+
+
     ) { }
 
     async register(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
         try {
-            logger.info(req.body)
+            // logger.info()
             const { firstname, lastname, email, password, } = req.body
             const role = req.role
-            console.log("register req.role", role);
+            // console.log("register req.role", role);
+            logger.info({ email }, "registered")
 
             if (!role) {
                 throw new AppError("Role not provided", HttpStatusCode.BAD_REQUEST);
@@ -90,7 +101,7 @@ export class UserController implements IAuthController {
             const { refreashToken, accessToken, user } = await this._loginUseCase.login(email, password, role)
             setAccessCookie(accessToken, res)
             setRefreshCookie(refreashToken, res)
-            logger.info(`${role}: ${user.email} has been loggedin succesfully`)
+            logger.info({ email, role }, "has been loggedin succesfully")
             ResponseHandler.success(res, `${role} login Successfully`, user, HttpStatusCode.OK)
         } catch (error) {
             next(error)
@@ -119,12 +130,11 @@ export class UserController implements IAuthController {
     }
     async GetCurrentUser(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
         try {
-            console.log("hello fromm me")
             const user = req.user
             if (!user) {
                 throw new AppError("unauthorized user not found", HttpStatusCode.UNAUTHORIZED)
             }
-
+            // console.log("hello fromm me",user)
 
 
             ResponseHandler.success(res, "userfetched success", user, HttpStatusCode.OK)
@@ -156,7 +166,7 @@ export class UserController implements IAuthController {
         try {
             const { role } = req.body
             const userDetails = req.user
-            console.log("setrole", userDetails);
+            // console.log("setrole", userDetails);
 
             if (!userDetails) {
                 throw new AppError("unauthorized access", HttpStatusCode.UNAUTHORIZED)
@@ -178,19 +188,47 @@ export class UserController implements IAuthController {
 
     async logout(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
         try {
+            console.log("hello");
+
             const accessToken = req.cookies['access_token'];
-        const refreshToken = req.cookies['refresh_token'];
+            const refreshToken = req.cookies['refresh_token'];
 
-        if (!accessToken || !refreshToken) {
-            throw new AppError("jwt tokens are missing", HttpStatusCode.BAD_REQUEST);
+            if (!accessToken || !refreshToken) {
+                throw new AppError("jwt tokens are missing", HttpStatusCode.BAD_REQUEST);
+            }
+
+            const { message } = await this._logoutUseCase.logout(accessToken, refreshToken);
+
+            res.clearCookie('access_token', { httpOnly: true, secure: true, sameSite: 'strict' });
+            res.clearCookie('refresh_token', { httpOnly: true, secure: true, sameSite: 'strict' });
+
+            ResponseHandler.success(res, message, null, HttpStatusCode.OK);
+        } catch (error) {
+            next(error)
         }
+    }
 
-        const { message } = await this._logoutUseCase.logout(accessToken, refreshToken);
-
-        res.clearCookie('access_token', { httpOnly: true, secure: true, sameSite: 'strict' });
-        res.clearCookie('refresh_token', { httpOnly: true, secure: true, sameSite: 'strict' });
-
-        ResponseHandler.success(res, message, null, HttpStatusCode.OK);
+    async forgetPassword(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { email } = req.body
+            const role = req.role
+            if (!email || !role) {
+                throw new AppError("missing email or role", HttpStatusCode.BAD_REQUEST)
+            }
+            const { userId, message } = await this.forgetPasswordUseCase.execute(email, role)
+            ResponseHandler.success(res, message, userId, HttpStatusCode.OK)
+        } catch (error) {
+            next(error)
+        }
+    }
+    async updatePassword(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { email, password } = req.body
+            if (!email || !password) {
+                throw new AppError("email or password not found", HttpStatusCode.BAD_REQUEST)
+            }
+            await this._resetPassUseCase.resetPass(email, password)
+            ResponseHandler.success(res, "password resetted successfully", null, HttpStatusCode.OK)
         } catch (error) {
             next(error)
         }
