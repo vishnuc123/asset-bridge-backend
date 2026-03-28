@@ -25,7 +25,7 @@ export class UserRoutes extends BaseRoute {
             .post('/set-role', AuthMiddleWare, (req: CustomRequest, res, next) => this.authController.setRole(req, res, next))
             .post('/forget-password',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.forgetPassword(req,res,next))
             .post('/reset-password',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.updatePassword(req,res,next))
-            .get('/me', AuthMiddleWare, attachRole(Roles.user_role), (req: CustomRequest, res, next) => this.authController.GetCurrentUser(req, res, next))
+            .get('/me', AuthMiddleWare, (req: CustomRequest, res, next) => this.authController.GetCurrentUser(req, res, next))
 
 
     }

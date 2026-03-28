@@ -5,6 +5,7 @@ import { IResetPassUseCase } from "../../interfaces/auth.interface";
 import { Tokens } from "../../../constants/Tokens";
 import { IUserRepository } from "../../../domain/repositories/IUserRepository";
 import { IAuthService } from "../../../infrastructure/interfaces/AuthService.interface";
+import { logger } from "../../../utils/Logger";
 
 export class ResetPassUseCase implements IResetPassUseCase {
     constructor(
@@ -22,6 +23,7 @@ export class ResetPassUseCase implements IResetPassUseCase {
 
         const isMatch = await this._authService.ComparePassword(password, user.password)
         if (isMatch) {
+            logger.error("password is matching with old password")
             throw new AppError("password is matching with old passsword", HttpStatusCode.CONFLICT)
         }
         const hashPass = await this._authService.hashPassword(password)

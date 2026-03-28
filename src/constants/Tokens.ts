@@ -34,7 +34,8 @@ export const Tokens = {
     // routes
     authUserRoute:Symbol.for("authUserRoutes"),
     InvestorRoutes:Symbol.for("InvestorRoutes"),
-    AdminRoutes:Symbol.for("AdminRoutes")
+    AdminRoutes:Symbol.for("AdminRoutes"),
+    OwnerRoutes:Symbol.for("OwnerRoutes")
 
     
 
