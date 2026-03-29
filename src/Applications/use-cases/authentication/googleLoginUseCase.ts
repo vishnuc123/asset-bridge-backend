@@ -50,6 +50,9 @@ export class _googleLoginUseCase implements IGoogleLoginUseCase {
 
         const email = payload.email
         let user = await this._authRepository.findByEmail(email)
+        if(user?.isBlocked){
+            throw new AppError("banned: please contact admin",HttpStatusCode.BAD_REQUEST)
+        }
         if (!user) {
             const newUser: TCreateUserDto = {
                 firstname: payload.given_name || "google",

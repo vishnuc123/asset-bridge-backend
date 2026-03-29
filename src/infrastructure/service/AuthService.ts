@@ -57,11 +57,18 @@ export class AuthService implements IAuthService {
         return bcrypt.hash(password, salt)
     }
 
-    async storeOtp(userId: string, otp: string, data: TOtpData,): Promise<void> {
-        await Promise.all([
-            // this.checkRequestLimit(userId)
-            this._redisService.storeOtp(userId, otp, data,)
-        ])
+    async storeOtp(userId: string, otp: string, data: TOtpData,): Promise<{timer:number}> {
+        // await Promise.all([
+        //     // this.checkRequestLimit(userId)
+        //     this._redisService.storeOtp(userId, otp, data,)
+        // ])
+
+        const result = await this._redisService.storeOtp(userId,otp,data)
+        console.log(result.timer);
+        
+        return {
+            timer:result.timer
+        }
     }
     async sendOtpOnEmail(email: string, otp: string): Promise<{ message: string, otpExpireAt: string }> {
         const result = await this._MailService.sendOtpEmail(email, otp, (otpTimer.expiresInSeconds / 60).toString());
@@ -128,5 +135,26 @@ export class AuthService implements IAuthService {
         }
     }
 
-    
+    async resendOtp(userId: string,purpose:"signup"|"reset"): Promise<void> {
+        
+        const stored = await this._redisService.getOtp(userId,purpose)
+        console.log("stored",stored);
+
+        if (!stored) {
+            throw new AppError('Session expired. Please try again.', HttpStatusCode.BAD_REQUEST)
+        }
+
+        const currentTime = new Date().getTime();
+
+        if (currentTime < stored.expiresAt) {
+            throw new AppError('OTP is still valid. Please wait before requesting a new OTP.', HttpStatusCode.BAD_REQUEST);
+        }
+
+        const otp = this.generateOtp(6)
+
+        await Promise.all([
+            this._redisService.storeOtp(userId, otp, stored.data),
+            this.sendOtpOnEmail(stored.data.email as string, otp)
+        ])
+    }
 }

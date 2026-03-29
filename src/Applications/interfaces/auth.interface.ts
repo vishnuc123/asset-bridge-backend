@@ -5,7 +5,7 @@ export interface ILoginUseCase {
     login(email: string, password: string, role: TRole): Promise<{ refreashToken: string, accessToken: string, user: TUserResponseDto }>
 }
 export interface IRegisterUseCase {
-    Regiser(userData: TCreateUserDto): Promise<{ userId: string, message: string }>
+    Regiser(userData: TCreateUserDto): Promise<{ userId: string,expireTime:Number, message: string }>
 }
 export interface IVerifyOtpUseCase {
     VerifyOtp(userId: string, opt: string, purpose: "signup" | "reset"): Promise<{ message: string, data: TOtpData }>

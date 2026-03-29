@@ -16,8 +16,8 @@ import { IUserRepository } from "../../../domain/repositories/IUserRepository.js
 export class LoginUseCase implements ILoginUseCase {
     constructor(
         @inject(Tokens.authRepository) private _userRepository: IUserRepository,
-        @inject(Tokens.authService) private _authService:AuthService,
-        @inject(Tokens.redisService)private _redisService:RedisService
+        @inject(Tokens.authService) private _authService: AuthService,
+        @inject(Tokens.redisService) private _redisService: RedisService
     ) { }
     async login(email: string, password: string, role: TRole): Promise<{ refreashToken: string; accessToken: string; user: TUserResponseDto; }> {
 
@@ -26,32 +26,40 @@ export class LoginUseCase implements ILoginUseCase {
         // }
 
         const user = await this._userRepository.findByEmail(email)
-        console.log("user",user);
-        
-        if(!user || !user._id){
+        console.log("user", user);
+
+        if (!user || !user._id) {
             logger.error(`failed login,user not exist`)
-            throw new AppError("user not exist",HttpStatusCode.NOT_FOUND)
+            throw new AppError("user not exist", HttpStatusCode.NOT_FOUND)
         }
 
+        if (!user.roles.includes(role)) {
+            throw new AppError(
+                `Please register as ${role} and verify OTP to access this`,
+                HttpStatusCode.FORBIDDEN
+            )
+        }
         // if(user.role !== role){
         //     throw new AppError("invalid role",HttpStatusCode.UNAUTHORIZED)
         // }
-        // if(user.isblocked)
-
-        const isValidpassword = await this._authService.ComparePassword(password,user.password)
-        if(!isValidpassword){
-            logger.error("user password not matching")
-            throw new AppError("user password not matching",HttpStatusCode.BAD_REQUEST)
+        if(user.isBlocked){
+            throw new AppError("banned: please contact Admin",HttpStatusCode.BAD_REQUEST)
         }
 
-        const accessToken = this._authService.generateAccessToken(user._id.toString(),role,user.email)
-        const refreashToken = this._authService.generateRefreashToken(user._id.toString(),role,user.email)
-        await this._redisService.storeRefreshToken(user._id.toString(),refreashToken,jwtConfig.refreshToken.maxAge/1000)
+        const isValidpassword = await this._authService.ComparePassword(password, user.password)
+        if (!isValidpassword) {
+            logger.error("user password not matching")
+            throw new AppError("user password not matching", HttpStatusCode.BAD_REQUEST)
+        }
+
+        const accessToken = this._authService.generateAccessToken(user._id.toString(), role, user.email)
+        const refreashToken = this._authService.generateRefreashToken(user._id.toString(), role, user.email)
+        await this._redisService.storeRefreshToken(user._id.toString(), refreashToken, jwtConfig.refreshToken.maxAge / 1000)
         const mapped = MapResponse.MapUserResponseToDto(user)
         return {
             refreashToken,
             accessToken,
-            user:mapped
+            user: mapped
         }
     }
 }

@@ -16,6 +16,7 @@ import { SetRoleUsecase } from "../../../../Applications/use-cases/authenticatio
 import { logoutUseCase } from "../../../../Applications/use-cases/authentication/logoutUseCase.js";
 import { forgetPasswordUseCase } from "../../../../Applications/use-cases/authentication/forgetPasswordUseCase.js";
 import { ResetPassUseCase } from "../../../../Applications/use-cases/authentication/resetPassUseCase.js";
+import { ResendOtpUseCase } from "../../../../Applications/use-cases/authentication/resentOtpUseCase.js";
 
 export const authModule = new ContainerModule(({bind}) =>  {
     bind(Tokens.authController).to(UserController)
@@ -35,5 +36,6 @@ export const authModule = new ContainerModule(({bind}) =>  {
     bind(Tokens._logoutUseCase).to(logoutUseCase)
     bind(Tokens._forgotPassUseCase).to(forgetPasswordUseCase)
     bind(Tokens._resetPassUseCase).to(ResetPassUseCase)
+    bind(Tokens._resendOtpUseCase).to(ResendOtpUseCase)
   
 })

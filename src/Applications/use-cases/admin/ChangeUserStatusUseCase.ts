@@ -13,6 +13,8 @@ export class ChangerUserStatusUseCase implements IChangeUserStatusUseCase {
         @inject(Tokens.authRepository) private _authRepository: IUserRepository
     ) { }
     async changeUserStatus(userid: string): Promise<{ user: TUserResponseDto; message: string; }> {
+        // console.log("userid",userid);
+        
         const user = await this._authRepository.findById(userid)
         if (!user) {
             throw new AppError("user not exist or not found", HttpStatusCode.NOT_FOUND)
@@ -26,7 +28,7 @@ export class ChangerUserStatusUseCase implements IChangeUserStatusUseCase {
         const mappedUser = MapResponse.MapUserResponseToDto(updateUser)
         return {
             user: mappedUser,
-            message: mappedUser.isBlocked ? `${mappedUser.role} BLOCKED` : `${mappedUser.isBlocked}UNBLOCKED`
+            message: mappedUser.isBlocked ? `${mappedUser.isBlocked} BLOCKED` : `${mappedUser.isBlocked}UNBLOCKED`
         }
     }
 }

@@ -7,24 +7,26 @@ import { attachRole } from "../../middlewares/attachRole.js";
 import { Roles } from "../../constants/Roles.js";
 import { NextFunction } from "express";
 import { AuthMiddleWare } from "../../middlewares/Authenticate.js";
+import { IAuthController } from "../interfaces/IAuthController.js";
 
 
 @injectable()
 export class UserRoutes extends BaseRoute {
     constructor(
-        @inject(Tokens.authController) private authController: UserController
+        @inject(Tokens.authController) private authController: IAuthController
     ) { super() }
     protected initRoute(): void {
         this.router
             .post("/signup", attachRole(Roles.user_role), (req: CustomRequest, res, next) => this.authController.register(req, res, next))
             .post('/otp/verifyOtp', attachRole(Roles.user_role), (req: CustomRequest, res, next) => this.authController.verifyOtp(req, res, next))
+            .post('/otp/resend', (req: CustomRequest, res, next) => this.authController.resendOtp(req, res, next))
             .post('/login', attachRole(Roles.user_role), (req: CustomRequest, res, next) => this.authController.login(req, res, next))
             .post('/refresh', (req: CustomRequest, res, next) => this.authController.verifyRefreash(req, res, next))
             .post('/google-login', attachRole(Roles.user_role), (req: CustomRequest, res, next) => this.authController.LoginUsingGoogle(req, res, next))
             .post('/logout', AuthMiddleWare, attachRole(Roles.user_role), (req: CustomRequest, res, next) => this.authController.logout(req, res, next))
             .post('/set-role', AuthMiddleWare, (req: CustomRequest, res, next) => this.authController.setRole(req, res, next))
-            .post('/forget-password',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.forgetPassword(req,res,next))
-            .post('/reset-password',attachRole(Roles.user_role),(req:CustomRequest,res,next) => this.authController.updatePassword(req,res,next))
+            .post('/forget-password', attachRole(Roles.user_role), (req: CustomRequest, res, next) => this.authController.forgetPassword(req, res, next))
+            .post('/reset-password', attachRole(Roles.user_role), (req: CustomRequest, res, next) => this.authController.updatePassword(req, res, next))
             .get('/me', AuthMiddleWare, (req: CustomRequest, res, next) => this.authController.GetCurrentUser(req, res, next))
 
 

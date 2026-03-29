@@ -10,5 +10,8 @@ export interface IAuthController {
     setRole(req: CustomRequest, res: Response, next: NextFunction): Promise<void>
     logout(req: CustomRequest, res: Response, next: NextFunction): Promise<void>
     forgetPassword(req: CustomRequest, res: Response, next: NextFunction): Promise<void>
+    resendOtp(req: CustomRequest, res: Response, next: NextFunction): Promise<void>
+    verifyRefreash(req: CustomRequest, res: Response, next: NextFunction): Promise<void>
+    GetCurrentUser(req: CustomRequest, res: Response, next: NextFunction): Promise<void>
     
 }

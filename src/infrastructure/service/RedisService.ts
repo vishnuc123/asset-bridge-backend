@@ -23,18 +23,24 @@ export class RedisService implements IredisService {
         const result = await this.RedisClient.del(key)
         return result;
     }
-    async storeOtp(userId: string, otp: string, data: TOtpData,): Promise<void> {
+    async storeOtp(userId: string, otp: string, data: TOtpData,): Promise<{timer:number}> {
         const payload = {
             otp,
             data,
             expiresAt: Date.now()+otpTimer.expiresInSeconds*1000,
         }
         await this.set(userId, payload, otpTimer.expiresInSeconds)
+        return {
+            timer: payload.expiresAt
+        }
     }
 
-    async getOtp(userId: string): Promise<{ otp: string, data: TOtpData, expiresAt: number } | null> {
+    async getOtp(userId: string,purpose:"signup" | "reset"): Promise<{ otp: string, data: TOtpData, expiresAt: number } | null> {
+        console.log("redis userid",userId);
+        
         const raw = await this.RedisClient.get(userId)
-
+        console.log("raw",raw);
+        
         if (!raw) return null
         // const jsonRaws = JSON.stringify(raw)
         const parsed = JSON.parse(raw);
@@ -42,7 +48,7 @@ export class RedisService implements IredisService {
         return parsed
     }
     async deleteOtp(userId: string): Promise<number> {
-        const result = await this.del(userId);
+        const result = await this.del(userId);``
         return result;
     }
     

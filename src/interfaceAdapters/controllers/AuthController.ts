@@ -37,6 +37,7 @@ export class UserController implements
         @inject(Tokens._setRoleUseCase) private _setRoleUseCase: SetRoleUsecase,
         @inject(Tokens._logoutUseCase) private _logoutUseCase: ILogoutUseCases,
         @inject(Tokens._resetPassUseCase) private _resetPassUseCase: IResetPassUseCase,
+        @inject(Tokens._resendOtpUseCase)private _resendOtpUseCase:IResendOtpUseCase,
 
         @inject(Tokens._forgotPassUseCase) private forgetPasswordUseCase: IForgotPassUseCase
 
@@ -231,6 +232,18 @@ export class UserController implements
             ResponseHandler.success(res, "password resetted successfully", null, HttpStatusCode.OK)
         } catch (error) {
             next(error)
+        }
+    }
+    async resendOtp(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { userId } = req.body;
+            if (!userId) {
+                throw new AppError(AUTH_ERROR_MESSAGES.resendOtp, HttpStatusCode.BAD_REQUEST);
+            }
+            const { message } = await this._resendOtpUseCase.resendOtp(userId,"signup");
+            ResponseHandler.success(res, message, null, HttpStatusCode.OK)
+        } catch (error) {
+            next(error);
         }
     }
 }

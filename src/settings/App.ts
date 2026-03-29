@@ -20,8 +20,8 @@ export class Settings {
         this.server = http.createServer(this.App)
         this.setGlobalMiddlewares();
         this.setSecurityMiddlewares();
-        this.setErrorHandling();
         this.setRoutes();
+        this.setErrorHandling();
     }
 
     private setGlobalMiddlewares(): void {

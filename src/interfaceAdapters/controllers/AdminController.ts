@@ -49,7 +49,9 @@ export class AdminController implements IAdminController {
     }
     async ChangerUserStatus(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
         try {
-            const { userId } = req.body
+            const { data } = req.body
+            // console.log("userid",data.userId)
+            const userId = data.userId
             const role = req.role
             if (role !== Roles.admin_role) {
                 throw new AppError("only admin can access", HttpStatusCode.BAD_REQUEST)
