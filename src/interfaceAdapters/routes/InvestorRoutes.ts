@@ -21,6 +21,7 @@ export class InvestorRoutes extends BaseRoute{
         .post('/login/',attachRole(Roles.investor_role),(req:CustomRequest,res,next) => this.authController.login(req,res,next))
         .post('/refresh',(req:CustomRequest,res,next) => this.authController.verifyRefreash(req,res,next))
         .post('/google-login',attachRole(Roles.investor_role),(req:CustomRequest,res,next) => this.authController.LoginUsingGoogle(req,res,next))
-        // .get('/me',AuthMiddleWare,attachRole(Roles.investor_role),(req:CustomRequest,res,next) => this.authController.GetCurrentUser(req,res,next))
+
+        // kyc routes
     }
 }

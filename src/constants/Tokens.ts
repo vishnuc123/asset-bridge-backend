@@ -2,9 +2,11 @@ export const Tokens = {
     // controllers
     authController : Symbol.for("AuthController"),
     adminController:Symbol.for("AdminController"),
+    kycController:Symbol.for("KycController"),
 
     // Repostiories
     authRepository : Symbol.for("AuthRepository"),
+    kycRepository:Symbol.for("KycRepository"),
 
     // services
     authService:Symbol.for("AuthService"),
@@ -25,6 +27,8 @@ export const Tokens = {
     _resendOtpUseCase:Symbol.for("ResendOtpUseCase"),
     _forgotPassUseCase:Symbol.for("ForgetPasswordUseCase"),
 
+    _kycUseCase:Symbol.for("KycUseCase"),
+
 
     // adminusecasess
     getAllUsersUseCase:Symbol.for("getAllUsersUseCase"),
@@ -35,7 +39,8 @@ export const Tokens = {
     authUserRoute:Symbol.for("authUserRoutes"),
     InvestorRoutes:Symbol.for("InvestorRoutes"),
     AdminRoutes:Symbol.for("AdminRoutes"),
-    OwnerRoutes:Symbol.for("OwnerRoutes")
+    OwnerRoutes:Symbol.for("OwnerRoutes"),
+    kycRoutes:Symbol.for("KycRoutes")
 
     
 

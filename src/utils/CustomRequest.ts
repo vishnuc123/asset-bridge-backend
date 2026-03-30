@@ -3,6 +3,7 @@ import type { TRole } from "../shared/types/CommonTypes.js";
 
 export interface CustomRequest extends Request{
     role?:TRole,
+    allowedRole?:TRole[]
     user?:{
         userId:string,
         role:string,

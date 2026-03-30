@@ -22,6 +22,4 @@ export interface IUserModel {
     emailVerified: boolean
     phoneVerified: boolean
 
-    createdAt: Date
-    updatedAt: Date
 }

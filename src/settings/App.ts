@@ -10,6 +10,7 @@ import cookieParser from "cookie-parser"
 import { AdminRoutes } from "../interfaceAdapters/routes/AdminRoutes";
 import { InvestorRoutes } from "../interfaceAdapters/routes/InvestorRoutes";
 import { OwnerRoutes } from "../interfaceAdapters/routes/OwnerRoutes";
+import { KycRoutes } from "../interfaceAdapters/routes/kyc/KycRoutes";
 
 export class Settings {
     public App: Application;
@@ -54,6 +55,10 @@ export class Settings {
         this.App.use("/api/investor",InvestorRoutes.router)
         const OwnerRoutes = container.get<OwnerRoutes>(Tokens.OwnerRoutes)
         this.App.use("/api/owner",OwnerRoutes.router)
+
+
+        const kycRoutes = container.get<KycRoutes>(Tokens.kycRoutes)
+        this.App.use("/api/kyc",kycRoutes.router)
     }
     public listen(port: number): void {
         this.server.listen(port, () => {
