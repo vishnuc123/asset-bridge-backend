@@ -3,7 +3,7 @@ import { TKycUserData } from "../../../shared/types/CommonTypes"
 import { IKycUseCase } from "../../interfaces/kyc.interface"
 import { Tokens } from "../../../constants/Tokens"
 import { Types } from "mongoose"
-import { mapKycToDto } from "../../../interfaceAdapters/dtos/kyc.dto"
+import { mapKycToDto, TKycResponseDto } from "../../../interfaceAdapters/dtos/kyc.dto"
 import { IKycRepository } from "../../../domain/repositories/IKycRepository"
 import { AppError } from "../../../utils/AppError"
 import { HttpStatusCode } from "../../../constants/HttpStatusCodes"
@@ -14,9 +14,9 @@ export class KycUseCase implements IKycUseCase {
         @inject(Tokens.kycRepository) private kycRepository: IKycRepository,
     ) { }
 
-    async submitKyc(data: TKycUserData): Promise<TKycUserData> {
+    async submitKyc(data: TKycUserData): Promise<TKycResponseDto> {
 
-        const existingKyc = await this.kycRepository.findUserById(data.userId.toString())
+        const existingKyc = await this.kycRepository.findKycByUserId(data.userId.toString())
 
 
         let result;
@@ -42,7 +42,7 @@ export class KycUseCase implements IKycUseCase {
     }
 
     async canUploadKyc(userId: string): Promise<void> {
-        const existingKyc = await this.kycRepository.findUserById(userId);
+        const existingKyc = await this.kycRepository.findKycByUserId(userId);
         console.log("existing user", existingKyc);
 
 

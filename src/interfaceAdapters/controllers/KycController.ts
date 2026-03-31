@@ -8,15 +8,19 @@ import { ResponseHandler } from "../../middlewares/ResponseHandle";
 import { inject, injectable } from "inversify";
 import { Tokens } from "../../constants/Tokens";
 import { IKycUseCase } from "../../Applications/interfaces/kyc.interface";
+import { Roles } from "../../constants/Roles";
+import { IGetAllKycUseCase } from "../../Applications/interfaces/admin.interface";
+import { TPagination } from "../../shared/types/CommonTypes";
 
 @injectable()
 export class KycController implements IkycController {
     constructor(
-        @inject(Tokens._kycUseCase)private kycUseCase:IKycUseCase
-    ){}
+        @inject(Tokens._kycUseCase) private kycUseCase: IKycUseCase,
+        @inject(Tokens.getAllKycUseCase)private getAllKycUseCase:IGetAllKycUseCase
+    ) { }
     async uploadUrl(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
         try {
-            const {userId,files} = req.body
+            const { userId, files } = req.body
             console.log("data", req.body);
 
             if (!files) {
@@ -45,10 +49,10 @@ export class KycController implements IkycController {
     async submit(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
         try {
 
-            const {userId,payload} = req.body
-            console.log("userid",userId);
+            const { userId, payload } = req.body
+            console.log("userid", userId);
             // const userId = userId
-            
+
             const { profileImage, aadhaar, selfieVideo } = payload
 
             if (!profileImage || !aadhaar || !selfieVideo) {
@@ -68,6 +72,38 @@ export class KycController implements IkycController {
             })
 
             ResponseHandler.success(res, "KYC submitted successfully", result, HttpStatusCode.OK)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async getAllKyc(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const role = req.role
+            console.log(role)
+            if (role !== Roles.admin_role) {
+                throw new AppError("only admin role can access", HttpStatusCode.FORBIDDEN)
+            }
+            const page = Number(req.query.page) || 1;
+            const limit = Number(req.query.limit) || 10;
+            const search = req.query.search as string
+            const sortField = req.query.sortField as string;
+            const sortOrder = req.query.sortOrder as string;
+            console.log(page, limit, search, sortField, sortOrder)
+            const allowedSortFields = ["firstname", "updatedAt"];
+
+            if (!allowedSortFields.includes(sortField)) {
+                throw new AppError("SortField Not Found or Not Accessible", HttpStatusCode.BAD_REQUEST)
+            }
+
+            const { data, totalData } = await this.getAllKycUseCase.getAllKycDetails(page, limit, role, search, sortField, sortOrder)
+
+            const pagination: TPagination = { page: page, limit: limit, totalData: totalData, totalPages: Math.ceil(totalData / limit) }
+            const result = {
+                data,
+                pagination
+            }
+            ResponseHandler.success(res, "ALL kyc Data fetched", result, HttpStatusCode.OK)
         } catch (error) {
             next(error)
         }

@@ -13,6 +13,7 @@ export const Tokens = {
     redisService:Symbol.for("RedisService"),
     _mailService:Symbol.for("MailService"),
     VerifyOtp:Symbol.for("VerifyOtp"),
+    s3Service:Symbol.for("s3Service"),
 
     // userCases
     LoginUseCase:Symbol.for("LoginUseCase"),
@@ -30,9 +31,12 @@ export const Tokens = {
     _kycUseCase:Symbol.for("KycUseCase"),
 
 
+
     // adminusecasess
     getAllUsersUseCase:Symbol.for("getAllUsersUseCase"),
     changeUserStatusUseCase:Symbol.for("changeUserStatusUseCase"),
+    getAllKycUseCase:Symbol.for("getAllKycUseCase"),
+    getSingleUserUsecase:Symbol.for("getSingleUserUseCase"),
 
 
     // routes

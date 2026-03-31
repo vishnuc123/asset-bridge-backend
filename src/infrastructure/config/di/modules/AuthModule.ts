@@ -17,6 +17,7 @@ import { logoutUseCase } from "../../../../Applications/use-cases/authentication
 import { forgetPasswordUseCase } from "../../../../Applications/use-cases/authentication/forgetPasswordUseCase.js";
 import { ResetPassUseCase } from "../../../../Applications/use-cases/authentication/resetPassUseCase.js";
 import { ResendOtpUseCase } from "../../../../Applications/use-cases/authentication/resentOtpUseCase.js";
+import { S3Service } from "../../../service/s3Service.js";
 
 export const authModule = new ContainerModule(({bind}) =>  {
     bind(Tokens.authController).to(UserController)
@@ -26,6 +27,7 @@ export const authModule = new ContainerModule(({bind}) =>  {
     bind(Tokens.redisService).to(RedisService)
     bind(Tokens._mailService).to(MailService)
     bind(Tokens.VerifyOtp).to(VerifyOtpUseCase)
+    bind(Tokens.s3Service).to(S3Service)
 
     bind(Tokens.LoginUseCase).to(LoginUseCase)
     bind(Tokens.RegisterUseCase).to(RegisterUseCase)

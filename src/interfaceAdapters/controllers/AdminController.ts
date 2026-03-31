@@ -6,7 +6,7 @@ import { Roles } from "../../constants/Roles";
 import { AppError } from "../../utils/AppError";
 import { HttpStatusCode } from "../../constants/HttpStatusCodes";
 import { Tokens } from "../../constants/Tokens";
-import { IChangeUserStatusUseCase, IGetAllUserDataUseCase } from "../../Applications/interfaces/admin.interface";
+import { IChangeUserStatusUseCase, IGetAllUserDataUseCase, IgetSingleUserUseCase } from "../../Applications/interfaces/admin.interface";
 import { TPagination } from "../../shared/types/CommonTypes";
 import { ResponseHandler } from "../../middlewares/ResponseHandle";
 
@@ -14,7 +14,8 @@ import { ResponseHandler } from "../../middlewares/ResponseHandle";
 export class AdminController implements IAdminController {
     constructor(
         @inject(Tokens.getAllUsersUseCase) private _getallUsersUsecase: IGetAllUserDataUseCase,
-        @inject(Tokens.changeUserStatusUseCase) private _changeUserStatusUseCase: IChangeUserStatusUseCase
+        @inject(Tokens.changeUserStatusUseCase) private _changeUserStatusUseCase: IChangeUserStatusUseCase,
+        @inject(Tokens.getSingleUserUsecase) private getSingleUserUseCase: IgetSingleUserUseCase
     ) { }
     async getAllUserDetails(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
         try {
@@ -32,7 +33,7 @@ export class AdminController implements IAdminController {
             const allowedSortFields = ["firstname", "updatedAt"];
 
             if (!allowedSortFields.includes(sortField)) {
-                throw new AppError("SortField Not Found or Not Accessible",HttpStatusCode.BAD_REQUEST)
+                throw new AppError("SortField Not Found or Not Accessible", HttpStatusCode.BAD_REQUEST)
             }
 
             const { users, TotalData } = await this._getallUsersUsecase.GetAllUseDetails(page, limit, role, search, sortField, sortOrder)
@@ -60,6 +61,26 @@ export class AdminController implements IAdminController {
             const { user, message } = await this._changeUserStatusUseCase.changeUserStatus(userId)
 
             ResponseHandler.success(res, message, user, HttpStatusCode.OK)
+        } catch (error) {
+            next(error)
+        }
+    }
+    async getUserDetails(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { userId } = req.params
+            console.log("userid",userId);
+            
+            const role = req.role
+            if (role !== Roles.admin_role) {
+                throw new AppError("only admin can access", HttpStatusCode.BAD_REQUEST)
+            }
+            if (!userId) {
+                throw new AppError("user id not found", HttpStatusCode.BAD_REQUEST)
+            }
+
+            const {user,kyc} = await this.getSingleUserUseCase.getSingleUseDetails(userId as string)
+            const result = {user,kyc}
+            ResponseHandler.success(res, "user data fetched successfulyy", result, HttpStatusCode.OK)
         } catch (error) {
             next(error)
         }

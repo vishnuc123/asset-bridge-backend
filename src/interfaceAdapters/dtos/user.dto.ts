@@ -1,13 +1,13 @@
-import type { TRole, TUserStatus } from "../../shared/types/CommonTypes.js"
+import type { TKYC_Status, TRole, TUserStatus } from "../../shared/types/CommonTypes.js"
 
-export type TUserResponseDto =  {
+export type TUserResponseDto = {
     userId: string
     firstname: string
     lastname: string
     email: string
-    roles:TRole[]
-    status:TUserStatus
-    isBlocked:boolean,
+    roles: TRole[]
+    status: TUserStatus
+    isBlocked: boolean,
     phone: string
     walletId?: string
 
@@ -27,18 +27,20 @@ export type TCreateUserDto = {
     firstname: string
     lastname: string
     email: string
-    password:string
-    roles:TRole[]
-    status:TUserStatus
-    isBlocked:boolean
+    password: string
+    roles: TRole[]
+    status: TUserStatus
+    isBlocked: boolean
     // phone: string
 }
 
-export type TUserDataDto ={
-    firstname:string,
-    lastname:string,
-    email:string,
-    status:string,
-    isblocked:boolean,
-    createdAt:Date,
-} 
+export type TUserDataDto = {
+    firstname: string,
+    lastname: string,
+    email: string,
+    status: string,
+    isblocked: boolean,
+    createdAt: Date,
+}
+
+
